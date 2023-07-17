@@ -20,10 +20,10 @@ class Item(BaseModel):
     partno: str
     name: str
     typeof: Literal["cube", "cylinder"]
-    width: float
-    height: float
-    depth: float
-    weight: float
+    width: Decimal
+    height: Decimal
+    depth: Decimal
+    weight: Decimal
     level: Literal[1, 2, 3]  # Packing Priority level, choose 1-3
     loadbear: int
     # Upside down?
@@ -38,12 +38,11 @@ class Item(BaseModel):
         return self._updown if self.typeof == 'cube' else False
 
     def formatNumbers(self, number_of_decimals):
-        pass
-        # self.width = set2Decimal(self.width, number_of_decimals)
-        # self.height = set2Decimal(self.height, number_of_decimals)
-        # self.depth = set2Decimal(self.depth, number_of_decimals)
-        # self.weight = set2Decimal(self.weight, number_of_decimals)
-        # self.number_of_decimals = number_of_decimals
+        self.width = set2Decimal(self.width, number_of_decimals)
+        self.height = set2Decimal(self.height, number_of_decimals)
+        self.depth = set2Decimal(self.depth, number_of_decimals)
+        self.weight = set2Decimal(self.weight, number_of_decimals)
+        self.number_of_decimals = number_of_decimals
 
     def string(self):
         return "%s(%sx%sx%s, weight: %s) pos(%s) rt(%s) vol(%s)" % (
@@ -79,55 +78,46 @@ class Item(BaseModel):
         return dimension
 
 
-class Bin:
+class Bin(BaseModel):
+    partno: str
+    width: Decimal
+    height: Decimal
+    depth: Decimal
+    max_weight: Decimal
+    corner: int = 0
+    items: list = []
+    unfitted_items: list = []
+    number_of_decimals: int = DEFAULT_NUMBER_OF_DECIMALS
+    fix_point: bool = False
+    check_stable: bool = False
+    support_surface_ratio: float = 0
+    put_type: int = 1
+    gravity: list = []  # used to put gravity distribution
 
-    def __init__(self, partno, WHD, max_weight, corner=0, put_type=1):
-        ''' '''
-        self.partno = partno
-        self.width = WHD[0]
-        self.height = WHD[1]
-        self.depth = WHD[2]
-        self.max_weight = max_weight
-        self.corner = corner
-        self.items = []
-        self.fit_items = np.array([[0, WHD[0], 0, WHD[1], 0, 0]])
-        self.unfitted_items = []
-        self.number_of_decimals = DEFAULT_NUMBER_OF_DECIMALS
-        self.fix_point = False
-        self.check_stable = False
-        self.support_surface_ratio = 0
-        self.put_type = put_type
-        # used to put gravity distribution
-        self.gravity = []
+    @property
+    def fit_items(self):
+        return np.array([[0.0, float(self.width), 0.0, float(self.height), 0.0, 0.0]])
 
-    def formatNumbers(self, number_of_decimals):
-        ''' '''
+    def formatNumbers(self, number_of_decimals) -> None:
         self.width = set2Decimal(self.width, number_of_decimals)
         self.height = set2Decimal(self.height, number_of_decimals)
         self.depth = set2Decimal(self.depth, number_of_decimals)
         self.max_weight = set2Decimal(self.max_weight, number_of_decimals)
         self.number_of_decimals = number_of_decimals
 
-    def string(self):
-        ''' '''
+    def string(self) -> str:
         return "%s(%sx%sx%s, max_weight:%s) vol(%s)" % (
             self.partno, self.width, self.height, self.depth, self.max_weight,
             self.getVolume()
         )
 
-    def getVolume(self):
-        ''' '''
+    def getVolume(self) -> Decimal:
         return set2Decimal(
             self.width * self.height * self.depth, self.number_of_decimals
         )
 
-    def getTotalWeight(self):
-        ''' '''
-        total_weight = 0
-
-        for item in self.items:
-            total_weight += item.weight
-
+    def getTotalWeight(self) -> Decimal:
+        total_weight = sum([item.weight for item in self.items])
         return set2Decimal(total_weight, self.number_of_decimals)
 
     def putItem(self, item, pivot, axis=None):
@@ -309,11 +299,13 @@ class Bin:
                     partno='corner{}'.format(i),
                     name='corner',
                     typeof='cube',
-                    WHD=(corner, corner, corner),
+                    width=corner,
+                    height=corner,
+                    depth=corner,
                     weight=0,
                     level=0,
                     loadbear=0,
-                    updown=True,
+                    _updown=True,
                     color='#000000')
 
                 corner_list.append(a)
@@ -346,7 +338,6 @@ class Bin:
 class Packer:
 
     def __init__(self):
-        ''' '''
         self.bins = []
         self.items = []
         self.unfit_items = []
@@ -355,11 +346,9 @@ class Packer:
         # self.apex = []
 
     def addBin(self, bin):
-        ''' '''
         return self.bins.append(bin)
 
     def addItem(self, item):
-        ''' '''
         self.total_items = len(self.items) + 1
 
         return self.items.append(item)
@@ -682,7 +671,6 @@ class Packer:
 class Painter:
 
     def __init__(self, bins):
-        ''' '''
         self.items = bins.items
         self.width = bins.width
         self.height = bins.height
