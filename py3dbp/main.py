@@ -1,10 +1,13 @@
 import copy
+from decimal import Decimal
+from typing import Literal
 
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
 import numpy as np
 # required to plot a representation of Bin and contained items
 from matplotlib.patches import Circle, Rectangle
+from pydantic import BaseModel
 
 from .auxiliary_methods import intersect, set2Decimal
 from .constants import Axis, RotationType
@@ -13,57 +16,51 @@ DEFAULT_NUMBER_OF_DECIMALS = 0
 START_POSITION = [0, 0, 0]
 
 
-class Item:
+class Item(BaseModel):
+    partno: str
+    name: str
+    typeof: Literal["cube", "cylinder"]
+    width: float
+    height: float
+    depth: float
+    weight: float
+    level: Literal[1, 2, 3]  # Packing Priority level, choose 1-3
+    loadbear: int
+    # Upside down?
+    _updown: bool
+    color: str
+    rotation_type: int = 0
+    position: list[int] = START_POSITION
+    number_of_decimals: int = DEFAULT_NUMBER_OF_DECIMALS
 
-    def __init__(self, partno, name, typeof, WHD, weight, level, loadbear, updown, color):
-        ''' '''
-        self.partno = partno
-        self.name = name
-        self.typeof = typeof
-        self.width = WHD[0]
-        self.height = WHD[1]
-        self.depth = WHD[2]
-        self.weight = weight
-        # Packing Priority level ,choose 1-3
-        self.level = level
-        # loadbear
-        self.loadbear = loadbear
-        # Upside down? True or False
-        self.updown = updown if typeof == 'cube' else False
-        # Draw item color
-        self.color = color
-        self.rotation_type = 0
-        self.position = START_POSITION
-        self.number_of_decimals = DEFAULT_NUMBER_OF_DECIMALS
+    @property
+    def updown(self) -> bool:
+        return self._updown if self.typeof == 'cube' else False
 
     def formatNumbers(self, number_of_decimals):
-        ''' '''
-        self.width = set2Decimal(self.width, number_of_decimals)
-        self.height = set2Decimal(self.height, number_of_decimals)
-        self.depth = set2Decimal(self.depth, number_of_decimals)
-        self.weight = set2Decimal(self.weight, number_of_decimals)
-        self.number_of_decimals = number_of_decimals
+        pass
+        # self.width = set2Decimal(self.width, number_of_decimals)
+        # self.height = set2Decimal(self.height, number_of_decimals)
+        # self.depth = set2Decimal(self.depth, number_of_decimals)
+        # self.weight = set2Decimal(self.weight, number_of_decimals)
+        # self.number_of_decimals = number_of_decimals
 
     def string(self):
-        ''' '''
         return "%s(%sx%sx%s, weight: %s) pos(%s) rt(%s) vol(%s)" % (
             self.partno, self.width, self.height, self.depth, self.weight,
             self.position, self.rotation_type, self.getVolume()
         )
 
     def getVolume(self):
-        ''' '''
         return set2Decimal(self.width * self.height * self.depth, self.number_of_decimals)
 
     def getMaxArea(self):
-        ''' '''
-        a = sorted([self.width, self.height, self.depth], reverse=True) if self.updown == True else [
+        a = sorted([self.width, self.height, self.depth], reverse=True) if self.updown else [
             self.width, self.height, self.depth]
 
         return set2Decimal(a[0] * a[1], self.number_of_decimals)
 
     def getDimension(self):
-        ''' rotation type '''
         if self.rotation_type == RotationType.RT_WHD:
             dimension = [self.width, self.height, self.depth]
         elif self.rotation_type == RotationType.RT_HWD:
