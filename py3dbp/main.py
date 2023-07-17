@@ -214,18 +214,16 @@ class Bin(BaseModel):
 
         return fit
 
-    def checkDepth(self, unfix_point):
+    def checkDepth_old(self, unfix_point):
         ''' fix item position z '''
         z_ = [[0, 0], [float(self.depth), float(self.depth)]]
         for j in self.fit_items:
-            # creat x set
-            x_bottom = set([i for i in range(int(j[0]), int(j[1]))])
-            x_top = set(
-                [i for i in range(int(unfix_point[0]), int(unfix_point[1]))])
-            # creat y set
-            y_bottom = set([i for i in range(int(j[2]), int(j[3]))])
-            y_top = set(
-                [i for i in range(int(unfix_point[2]), int(unfix_point[3]))])
+            # create x set
+            x_bottom = set(range(int(j[0]), int(j[1])))
+            x_top = set(range(int(unfix_point[0]), int(unfix_point[1])))
+            # create y set
+            y_bottom = set(range(int(j[2]), int(j[3])))
+            y_top = set(range(int(unfix_point[2]), int(unfix_point[3])))
             # find intersection on x set and y set.
             if len(x_bottom & x_top) != 0 and len(y_bottom & y_top) != 0:
                 z_.append([float(j[4]), float(j[5])])
@@ -237,15 +235,53 @@ class Bin(BaseModel):
                 return z_[j][1]
         return unfix_point[4]
 
+    # TODO weiter nachvollziehen und andere anpassen
+    def checkDepth(self, unfix_point):
+        '''Fix item position in the z-axis'''
+
+        # Initialize z-axis ranges with bottom and top limits
+        z_ranges = [[0, 0], [float(self.depth), float(self.depth)]]
+
+        # Iterate over each item in fit_items
+        for item in self.fit_items:
+            # Create ranges for x and y dimensions
+            x_bottom_range = range(int(item[0]), int(item[1]))
+            x_top_range = range(int(unfix_point[0]), int(unfix_point[1]))
+            y_bottom_range = range(int(item[2]), int(item[3]))
+            y_top_range = range(int(unfix_point[2]), int(unfix_point[3]))
+
+            # Check for intersection between x and y ranges
+            if set(x_bottom_range) & set(x_top_range) and set(y_bottom_range) & set(y_top_range):
+                # Append z-axis range of the item to the list
+                z_ranges.append([float(item[4]), float(item[5])])
+
+        # Calculate the top depth of the unfix_point range
+        top_depth = unfix_point[5] - unfix_point[4]
+
+        # Sort z-axis ranges based on the upper limit
+        sorted_z_ranges = sorted(z_ranges, key=lambda z_range: z_range[1])
+
+        # Iterate over sorted z-axis ranges to find suitable space for fixing the item
+        for i in range(len(sorted_z_ranges) - 1):
+            current_range = sorted_z_ranges[i]
+            next_range = sorted_z_ranges[i + 1]
+
+            # Check if there is enough space between current and next range for fixing the item
+            if next_range[0] - current_range[1] >= top_depth:
+                return current_range[1]
+
+        # If no suitable space is found, fix the item at the initial lower limit of unfix_point range
+        return unfix_point[4]
+
     def checkWidth(self, unfix_point):
         ''' fix item position x '''
         x_ = [[0, 0], [float(self.width), float(self.width)]]
         for j in self.fit_items:
-            # creat z set
+            # create z set
             z_bottom = set([i for i in range(int(j[4]), int(j[5]))])
             z_top = set(
                 [i for i in range(int(unfix_point[4]), int(unfix_point[5]))])
-            # creat y set
+            # create y set
             y_bottom = set([i for i in range(int(j[2]), int(j[3]))])
             y_top = set(
                 [i for i in range(int(unfix_point[2]), int(unfix_point[3]))])
@@ -264,11 +300,11 @@ class Bin(BaseModel):
         '''fix item position y '''
         y_ = [[0, 0], [float(self.height), float(self.height)]]
         for j in self.fit_items:
-            # creat x set
+            # create x set
             x_bottom = set([i for i in range(int(j[0]), int(j[1]))])
             x_top = set(
                 [i for i in range(int(unfix_point[0]), int(unfix_point[1]))])
-            # creat z set
+            # create z set
             z_bottom = set([i for i in range(int(j[4]), int(j[5]))])
             z_top = set(
                 [i for i in range(int(unfix_point[4]), int(unfix_point[5]))])
