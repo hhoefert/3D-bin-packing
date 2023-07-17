@@ -117,97 +117,96 @@ class Bin(BaseModel):
     def putItem(self, item: Item, pivot: list[int], axis: Axis | None = None):
         ''' put item in bin TODO'''
         fit = False
+        # save the items position and update its position to the pivot point
         valid_item_position = item.position
         item.position = pivot
+        # get all relevant rotation options
         rotations = RotationType.ALL if item.upside_down else RotationType.Notupdown
-
+        # check each rotation
         for i in rotations:
             item.rotation_type = i
-            dimension = item.getDimension()
+            item_dimension = item.getDimension()
 
             # rotate
             if (
-                self.width < pivot[0] + dimension[0] or
-                self.height < pivot[1] + dimension[1] or
-                self.depth < pivot[2] + dimension[2]
+                self.width < pivot[0] + item_dimension[0] or
+                self.height < pivot[1] + item_dimension[1] or
+                self.depth < pivot[2] + item_dimension[2]
             ):
                 continue
 
             fit = True
-
             for current_item_in_bin in self.items:
+                # if any item intersects with the newly placed item at the pivot point, the item does not fit
                 if intersect(current_item_in_bin, item):
                     fit = False
                     break
 
-            if fit:
-                # cal total weight
-                if self.getTotalWeight() + item.weight > self.max_weight:
-                    fit = False
-                    return fit
-
-                # fix point float prob
-                if self.fix_point == True:
-
-                    [w, h, d] = dimension
-                    [x, y, z] = [float(pivot[0]), float(
-                        pivot[1]), float(pivot[2])]
-
-                    for i in range(3):
-                        # fix height
-                        y = self.checkHeight(
-                            [x, x+float(w), y, y+float(h), z, z+float(d)])
-                        # fix width
-                        x = self.checkWidth(
-                            [x, x+float(w), y, y+float(h), z, z+float(d)])
-                        # fix depth
-                        z = self.checkDepth(
-                            [x, x+float(w), y, y+float(h), z, z+float(d)])
-
-                    # check stability on item
-                    # rule :
-                    # 1. Define a support ratio, if the ratio below the support surface does not exceed this ratio, compare the second rule.
-                    # 2. If there is no support under any vertices of the bottom of the item, then fit = False.
-                    if self.check_stable == True:
-                        # Cal the surface area of ​​item.
-                        item_area_lower = int(dimension[0] * dimension[1])
-                        # Cal the surface area of ​​the underlying support.
-                        support_area_upper = 0
-                        for i in self.fit_items:
-                            # Verify that the lower support surface area is greater than the upper support surface area * support_surface_ratio.
-                            if z == i[5]:
-                                area = len(set([j for j in range(int(x), int(x+int(w)))]) & set([j for j in range(int(i[0]), int(i[1]))])) * \
-                                    len(set([j for j in range(int(y), int(y+int(h)))])
-                                        & set([j for j in range(int(i[2]), int(i[3]))]))
-                                support_area_upper += area
-
-                        # If not , get four vertices of the bottom of the item.
-                        if support_area_upper / item_area_lower < self.support_surface_ratio:
-                            four_vertices = [
-                                [x, y], [x+float(w), y], [x, y+float(h)], [x+float(w), y+float(h)]]
-                            #  If any vertices is not supported, fit = False.
-                            c = [False, False, False, False]
-                            for i in self.fit_items:
-                                if z == i[5]:
-                                    for jdx, j in enumerate(four_vertices):
-                                        if (i[0] <= j[0] <= i[1]) and (i[2] <= j[1] <= i[3]):
-                                            c[jdx] = True
-                            if False in c:
-                                item.position = valid_item_position
-                                fit = False
-                                return fit
-
-                    self.fit_items = np.append(self.fit_items, np.array(
-                        [[x, x+float(w), y, y+float(h), z, z+float(d)]]), axis=0)
-                    item.position = [set2Decimal(
-                        x), set2Decimal(y), set2Decimal(z)]
-
-                if fit:
-                    self.items.append(copy.deepcopy(item))
-
-            else:
+            if not fit:
                 item.position = valid_item_position
+                return False
 
+            # check if adding the item does not exceed the maximum allowed weight
+            if self.getTotalWeight() + item.weight > self.max_weight:
+                return False
+
+            # fix point float prob
+            if self.fix_point:
+                [w, h, d] = item_dimension
+                [x, y, z] = [float(pivot[0]), float(
+                    pivot[1]), float(pivot[2])]
+
+                # TODO why three times?
+                for i in range(3):
+                    # fix height
+                    y = self.checkHeight(
+                        [x, x+float(w), y, y+float(h), z, z+float(d)])
+                    # fix width
+                    x = self.checkWidth(
+                        [x, x+float(w), y, y+float(h), z, z+float(d)])
+                    # fix depth
+                    z = self.checkDepth(
+                        [x, x+float(w), y, y+float(h), z, z+float(d)])
+
+                # check stability on item
+                # The support ration is the ratio of the underlying items touching the newly placed item to the lower surface of the newly placed item
+                # rule :
+                # 1. Define a support ratio, if the ratio below the support surface does not exceed this ratio, compare the second rule.
+                # 2. If there is no support under any vertices of the bottom of the item, then fit = False.
+                if self.check_stable:
+                    # Calculate the surface area of ​​item.
+                    item_area_lower = int(
+                        item_dimension[0] * item_dimension[1])
+                    # Calculate the surface area of ​​the underlying support.
+                    support_area_upper = 0
+                    for item in [item for item in self.fit_items if z == item[5]]:
+                        # Verify that the lower support surface area is greater than the upper support surface area * support_surface_ratio.
+                        # TODO better way to calculate the intersecting area
+                        area = len(set(range(int(x), int(x+int(w)))) & set(range(int(item[0]), int(item[1])))) * len(
+                            set(range(int(y), int(y+int(h)))) & set(range(int(item[2]), int(item[3]))))
+                        support_area_upper += area
+
+                    # If not , get four vertices of the bottom of the item.
+                    if support_area_upper / item_area_lower < self.support_surface_ratio:
+                        four_vertices = [
+                            [x, y], [x+float(w), y], [x, y+float(h)], [x+float(w), y+float(h)]]
+                        #  If any vertices is not supported, fit = False.
+                        c = [False, False, False, False]
+                        for item in [item for item in self.fit_items if z == item[5]]:
+                            for idx, vertex in enumerate(four_vertices):
+                                if (item[0] <= vertex[0] <= item[1]) and (item[2] <= vertex[1] <= item[3]):
+                                    c[idx] = True
+                        if False in c:
+                            item.position = valid_item_position
+                            return False
+
+                self.fit_items = np.append(self.fit_items, np.array(
+                    [[x, x+float(w), y, y+float(h), z, z+float(d)]]), axis=0)
+                item.position = [set2Decimal(
+                    x), set2Decimal(y), set2Decimal(z)]
+
+            if fit:
+                self.items.append(copy.deepcopy(item))
             return fit
 
         else:
