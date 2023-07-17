@@ -27,15 +27,15 @@ class Item(BaseModel):
     level: Literal[1, 2, 3]  # Packing Priority level, choose 1-3
     loadbear: int
     # Upside down?
-    _updown: bool
+    _upside_down: bool
     color: str
     rotation_type: int = 0
     position: list[int] = START_POSITION
     number_of_decimals: int = DEFAULT_NUMBER_OF_DECIMALS
 
     @property
-    def updown(self) -> bool:
-        return self._updown if self.typeof == 'cube' else False
+    def upside_down(self) -> bool:
+        return self._upside_down if self.typeof == 'cube' else False
 
     def formatNumbers(self, number_of_decimals):
         self.width = set2Decimal(self.width, number_of_decimals)
@@ -54,28 +54,22 @@ class Item(BaseModel):
         return set2Decimal(self.width * self.height * self.depth, self.number_of_decimals)
 
     def getMaxArea(self):
-        a = sorted([self.width, self.height, self.depth], reverse=True) if self.updown else [
+        a = sorted([self.width, self.height, self.depth], reverse=True) if self.upside_down else [
             self.width, self.height, self.depth]
 
         return set2Decimal(a[0] * a[1], self.number_of_decimals)
 
     def getDimension(self):
-        if self.rotation_type == RotationType.RT_WHD:
-            dimension = [self.width, self.height, self.depth]
-        elif self.rotation_type == RotationType.RT_HWD:
-            dimension = [self.height, self.width, self.depth]
-        elif self.rotation_type == RotationType.RT_HDW:
-            dimension = [self.height, self.depth, self.width]
-        elif self.rotation_type == RotationType.RT_DHW:
-            dimension = [self.depth, self.height, self.width]
-        elif self.rotation_type == RotationType.RT_DWH:
-            dimension = [self.depth, self.width, self.height]
-        elif self.rotation_type == RotationType.RT_WDH:
-            dimension = [self.width, self.depth, self.height]
-        else:
-            dimension = []
+        rotation_types = {
+            RotationType.RT_WHD: [self.width, self.height, self.depth],
+            RotationType.RT_HWD: [self.height, self.width, self.depth],
+            RotationType.RT_HDW: [self.height, self.depth, self.width],
+            RotationType.RT_DHW: [self.depth, self.height, self.width],
+            RotationType.RT_DWH: [self.depth, self.width, self.height],
+            RotationType.RT_WDH: [self.width, self.depth, self.height]
+        }
 
-        return dimension
+        return rotation_types.get(self.rotation_type, [])
 
 
 class Bin(BaseModel):
@@ -120,16 +114,18 @@ class Bin(BaseModel):
         total_weight = sum([item.weight for item in self.items])
         return set2Decimal(total_weight, self.number_of_decimals)
 
-    def putItem(self, item, pivot, axis=None):
-        ''' put item in bin '''
+    def putItem(self, item: Item, pivot: list[int], axis: Axis | None = None):
+        ''' put item in bin TODO'''
         fit = False
         valid_item_position = item.position
         item.position = pivot
-        rotate = RotationType.ALL if item.updown == True else RotationType.Notupdown
-        for i in range(0, len(rotate)):
+        rotations = RotationType.ALL if item.upside_down else RotationType.Notupdown
+
+        for i in rotations:
             item.rotation_type = i
             dimension = item.getDimension()
-            # rotatate
+
+            # rotate
             if (
                 self.width < pivot[0] + dimension[0] or
                 self.height < pivot[1] + dimension[1] or
@@ -305,7 +301,7 @@ class Bin(BaseModel):
                     weight=0,
                     level=0,
                     loadbear=0,
-                    _updown=True,
+                    _upside_down=True,
                     color='#000000')
 
                 corner_list.append(a)
