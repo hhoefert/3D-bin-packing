@@ -8,12 +8,12 @@ class RotationType:
 
     ALL = [RT_WHD, RT_HWD, RT_HDW, RT_DHW, RT_DWH, RT_WDH]
     # un upright or un updown
-    Notupdown = [RT_WHD,RT_HWD]
- 
+    Notupdown = [RT_WHD, RT_HWD]
+
+
 class Axis:
     WIDTH = 0
     HEIGHT = 1
     DEPTH = 2
 
     ALL = [WIDTH, HEIGHT, DEPTH]
-
