@@ -1,5 +1,4 @@
 import copy
-from decimal import Decimal
 from typing import Literal
 
 import matplotlib.pyplot as plt
@@ -20,10 +19,10 @@ class Item(BaseModel):
     partno: str
     name: str
     typeof: Literal["cube", "cylinder"]
-    width: Decimal
-    height: Decimal
-    depth: Decimal
-    weight: Decimal
+    width: float
+    height: float
+    depth: float
+    weight: float
     level: int  # Packing Priority level, choose 1-3
     loadbear: int
     # Upside down?
@@ -36,13 +35,6 @@ class Item(BaseModel):
     @property
     def upside_down(self) -> bool:
         return self._upside_down if self.typeof == "cube" else False
-
-    def format_numbers(self, number_of_decimals):
-        self.width = set2Decimal(self.width, number_of_decimals)
-        self.height = set2Decimal(self.height, number_of_decimals)
-        self.depth = set2Decimal(self.depth, number_of_decimals)
-        self.weight = set2Decimal(self.weight, number_of_decimals)
-        self.number_of_decimals = number_of_decimals
 
     def string(self):
         return "%s(%sx%sx%s, weight: %s) pos(%s) rt(%s) vol(%s)" % (
@@ -122,14 +114,13 @@ def intersect(item1: Item, item2: Item) -> bool:
 
 class Bin(BaseModel):
     partno: str
-    width: Decimal
-    height: Decimal
-    depth: Decimal
-    max_weight: Decimal
+    width: float
+    height: float
+    depth: float
+    max_weight: float
     corner: int = 0
     items: list[Item] = []
-    fit_items: np.array = np.array(        # type: ignore
-        [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]])  # type: ignore
+    fit_items: list[list[float]] = [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
     unfitted_items: list = []
     number_of_decimals: int = DEFAULT_NUMBER_OF_DECIMALS
     fix_point: bool = False
@@ -143,27 +134,17 @@ class Bin(BaseModel):
     # def fit_items(self):
     #     return np.array([[0.0, float(self.width), 0.0, float(self.height), 0.0, 0.0]])
 
-    def format_numbers(self, number_of_decimals) -> None:
-        self.width = set2Decimal(self.width, number_of_decimals)
-        self.height = set2Decimal(self.height, number_of_decimals)
-        self.depth = set2Decimal(self.depth, number_of_decimals)
-        self.max_weight = set2Decimal(self.max_weight, number_of_decimals)
-        self.number_of_decimals = number_of_decimals
-
     def string(self) -> str:
         return "%s(%sx%sx%s, max_weight:%s) vol(%s)" % (
             self.partno, self.width, self.height, self.depth, self.max_weight,
             self.get_volume()
         )
 
-    def get_volume(self) -> Decimal:
-        return set2Decimal(
-            self.width * self.height * self.depth, self.number_of_decimals
-        )
+    def get_volume(self) -> float:
+        return self.width * self.height * self.depth
 
-    def get_total_weight(self) -> Decimal:
-        total_weight = sum([item.weight for item in self.items])
-        return set2Decimal(total_weight, self.number_of_decimals)
+    def get_total_weight(self) -> float:
+        return sum([item.weight for item in self.items])
 
     def put_item(self, item: Item, pivot: list[int]) -> bool:
         """ put item in bin TODO"""
@@ -260,8 +241,7 @@ class Bin(BaseModel):
                     return False
 
         # add the item with the correct dimensions to the fitted items
-        self.fit_items = np.append(self.fit_items, np.array(
-            [[x, x+float(w), y, y+float(h), z, z+float(d)]]), axis=0)
+        self.fit_items.append([x, x+float(w), y, y+float(h), z, z+float(d)])
         item.position = [set2Decimal(x), set2Decimal(y), set2Decimal(z)]
         return True
 
@@ -433,7 +413,7 @@ class Bin(BaseModel):
     def create_corners(self) -> list[Item]:
         """Add the corners of a container"""
         if self.corner != 0:
-            corner = set2Decimal(self.corner)
+            corner = self.corner
             corner_list: list[Item] = list()
             for i in range(8):
                 corner_list.append(Item(
@@ -443,7 +423,7 @@ class Bin(BaseModel):
                     width=corner,
                     height=corner,
                     depth=corner,
-                    weight=set2Decimal(0),
+                    weight=0,
                     level=0,
                     loadbear=0,
                     _upside_down=True,
@@ -465,13 +445,12 @@ class Bin(BaseModel):
         corner_pos = [float(corner.position[0]), float(corner.position[0])+float(self.corner), float(corner.position[1]), float(
             corner.position[1])+float(self.corner), float(corner.position[2]), float(corner.position[2])+float(self.corner)]
 
-        self.fit_items = np.append(
-            self.fit_items, np.array([corner_pos]), axis=0)
+        self.fit_items.append(corner_pos)
 
     def clear(self) -> None:
         """Clear the bin from all items"""
         self.items = []
-        self.fit_items = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]])
+        self.fit_items = [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
 
 
 class Packer(BaseModel):
@@ -725,12 +704,6 @@ class Packer(BaseModel):
 
     def pack(self, bigger_first: bool = False, distribute_items: bool = True, fix_point: bool = True, check_stable: bool = True, support_surface_ratio: float = 0.75, binding: list[tuple] = [], number_of_decimals: int = DEFAULT_NUMBER_OF_DECIMALS):
         """pack master func TODO docstring"""
-
-        # set decimals
-        for bin in self.bins:
-            bin.format_numbers(number_of_decimals)
-        for item in self.items:
-            item.format_numbers(number_of_decimals)
 
         self.binding = binding
         # Bin : sorted by volume

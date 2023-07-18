@@ -15,7 +15,9 @@ packer = Packer()
 # Unit cm/kg
 box = Bin(
     partno='example0',
-    WHD=(589.8, 243.8, 259.1),
+    width=589.8,
+    height=243.8,
+    depth=259.1,
     max_weight=28080,
     corner=15,
     bin_type=0
@@ -30,11 +32,13 @@ for i in range(5):
         partno='Dyson DC34 Animal{}'.format(str(i+1)),
         name='Dyson',
         typeof='cube',
-        WHD=(170, 82, 46),
+        width=170,
+        height=82,
+        depth=46,
         weight=85.12,
         level=1,
         loadbear=100,
-        upside_down=True,
+        _upside_down=True,
         color='#FF0000')
     )
 
@@ -45,11 +49,13 @@ for i in range(10):
         partno='wash{}'.format(str(i+1)),
         name='wash',
         typeof='cube',
-        WHD=(85, 60, 60),
+        width=85,
+        height=60,
+        depth=60,
         weight=10,
         level=1,
         loadbear=100,
-        upside_down=True,
+        _upside_down=True,
         color='#FFFF37'
     ))
 
@@ -60,11 +66,13 @@ for i in range(5):
         partno='Cabinet{}'.format(str(i+1)),
         name='cabint',
         typeof='cube',
-        WHD=(60, 80, 200),
+        width=60,
+        height=80,
+        depth=200,
         weight=80,
         level=1,
         loadbear=100,
-        upside_down=True,
+        _upside_down=True,
         color='#842B00')
     )
 
@@ -75,11 +83,13 @@ for i in range(10):
         partno='Server{}'.format(str(i+1)),
         name='server',
         typeof='cube',
-        WHD=(70, 100, 30),
+        width=70,
+        height=100,
+        depth=30,
         weight=20,
         level=1,
         loadbear=100,
-        upside_down=True,
+        _upside_down=True,
         color='#0000E3')
     )
 
@@ -137,9 +147,9 @@ for box in packer.bins:
     print("***************************************************")
     print('space utilization : {}%'.format(
         round(volume_t / float(volume) * 100, 2)))
-    print('residual volumn : ', float(volume) - volume_t)
+    print('residual volume : ', float(volume) - volume_t)
     print('unpack item : ', unfitted_name)
-    print('unpack item volumn : ', volume_f)
+    print('unpack item volume : ', volume_f)
     print("gravity distribution : ", box.gravity)
     # '''
     stop = time.time()
@@ -153,4 +163,4 @@ for box in packer.bins:
         write_num=True,
         fontsize=10
     )
-fig.show()
+fig.show()  # type: ignore

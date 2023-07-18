@@ -11,74 +11,44 @@ This case is used to demonstrate an example of a packing complex situation.
 # init packing function
 packer = Packer()
 #  init bin
-box = Bin('example2', (30, 10, 15), 99, 0, 1)
+box = Bin(partno='example2', width=30, height=10, depth=15, max_weight=99, corner=0, bin_type=1)
 packer.add_bin(box)
 #  add item
-packer.add_item(Item('test1', 'test', 'cube',
-                     (9, 8, 7), 1, 1, 100, True, 'red'))
-packer.add_item(Item('test2', 'test', 'cube',
-                     (4, 25, 1), 1, 1, 100, True, 'blue'))
-packer.add_item(Item('test3', 'test', 'cube',
-                     (2, 13, 5), 1, 1, 100, True, 'gray'))
-packer.add_item(Item('test4', 'test', 'cube',
-                     (7, 5, 4), 1, 1, 100, True, 'orange'))
-packer.add_item(Item('test5', 'test', 'cube', (10, 5, 2),
-                     1, 1, 100, True, 'lawngreen'))
-packer.add_item(Item('test6', 'test', 'cube',
-                     (6, 5, 2), 1, 1, 100, True, 'purple'))
-packer.add_item(Item('test7', 'test', 'cube',
-                     (5, 2, 9), 1, 1, 100, True, 'yellow'))
-packer.add_item(Item('test8', 'test', 'cube',
-                     (10, 8, 5), 1, 1, 100, True, 'pink'))
-packer.add_item(Item('test9', 'test', 'cube',
-                     (1, 3, 5), 1, 1, 100, True, 'brown'))
-packer.add_item(Item('test10', 'test', 'cube',
-                     (8, 4, 7), 1, 1, 100, True, 'cyan'))
-packer.add_item(Item('test11', 'test', 'cube',
-                     (2, 5, 3), 1, 1, 100, True, 'olive'))
-packer.add_item(Item('test12', 'test', 'cube',
-                     (1, 9, 2), 1, 1, 100, True, 'darkgreen'))
-packer.add_item(Item('test13', 'test', 'cube',
-                     (7, 5, 4), 1, 1, 100, True, 'orange'))
-packer.add_item(Item('test14', 'test', 'cube',
-                     (10, 2, 1), 1, 1, 100, True, 'lawngreen'))
-packer.add_item(Item('test15', 'test', 'cube',
-                     (3, 2, 4), 1, 1, 100, True, 'purple'))
-packer.add_item(Item('test16', 'test', 'cube',
-                     (5, 7, 8), 1, 1, 100, True, 'yellow'))
-packer.add_item(Item('test17', 'test', 'cube',
-                     (4, 8, 3), 1, 1, 100, True, 'white'))
-packer.add_item(Item('test18', 'test', 'cube',
-                     (2, 11, 5), 1, 1, 100, True, 'brown'))
-packer.add_item(Item('test19', 'test', 'cube',
-                     (8, 3, 5), 1, 1, 100, True, 'cyan'))
-packer.add_item(Item('test20', 'test', 'cube',
-                     (7, 4, 5), 1, 1, 100, True, 'olive'))
-packer.add_item(Item('test21', 'test', 'cube',
-                     (2, 4, 11), 1, 1, 100, True, 'darkgreen'))
-packer.add_item(Item('test22', 'test', 'cube',
-                     (1, 3, 4), 1, 1, 100, True, 'orange'))
-packer.add_item(Item('test23', 'test', 'cube',
-                     (10, 5, 2), 1, 1, 100, True, 'lawngreen'))
-packer.add_item(Item('test24', 'test', 'cube',
-                     (7, 4, 5), 1, 1, 100, True, 'purple'))
-packer.add_item(Item('test25', 'test', 'cube',
-                     (2, 10, 3), 1, 1, 100, True, 'yellow'))
-packer.add_item(Item('test26', 'test', 'cube',
-                     (3, 8, 1), 1, 1, 100, True, 'pink'))
-packer.add_item(Item('test27', 'test', 'cube',
-                     (7, 2, 5), 1, 1, 100, True, 'brown'))
-packer.add_item(Item('test28', 'test', 'cube',
-                     (8, 9, 5), 1, 1, 100, True, 'cyan'))
-packer.add_item(Item('test29', 'test', 'cube',
-                     (4, 5, 10), 1, 1, 100, True, 'olive'))
-packer.add_item(Item('test30', 'test', 'cube',
-                     (10, 10, 2), 1, 1, 100, True, 'darkgreen'))
+packer.add_item(Item(partno='test1', name='test', typeof='cube', width=9, height=8, depth=7, weight=1, level=1, loadbear=100, _upside_down=True, color='red'))
+packer.add_item(Item(partno='test2', name='test', typeof='cube', width=4, height=25, depth=1, weight=1, level=1, loadbear=100, _upside_down=True, color='blue'))
+packer.add_item(Item(partno='test3', name='test', typeof='cube', width=2, height=13, depth=5, weight=1, level=1, loadbear=100, _upside_down=True, color='gray'))
+packer.add_item(Item(partno='test4', name='test', typeof='cube', width=7, height=5, depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='orange'))
+packer.add_item(Item(partno='test5', name='test', typeof='cube', width=10, height=5, depth=2, weight=1, level=1, loadbear=100, _upside_down=True, color='lawngreen'))
+packer.add_item(Item(partno='test6', name='test', typeof='cube', width=6, height=5, depth=2, weight=1, level=1, loadbear=100, _upside_down=True, color='purple'))
+packer.add_item(Item(partno='test7', name='test', typeof='cube', width=5, height=2, depth=9, weight=1, level=1, loadbear=100, _upside_down=True, color='yellow'))
+packer.add_item(Item(partno='test8', name='test', typeof='cube', width=10, height=8, depth=5, weight=1, level=1, loadbear=100, _upside_down=True, color='pink'))
+packer.add_item(Item(partno='test9', name='test', typeof='cube', width=1, height=3, depth=5, weight=1, level=1, loadbear=100, _upside_down=True, color='brown'))
+packer.add_item(Item(partno='test10', name='test', typeof='cube', width=8, height=4, depth=7, weight=1, level=1, loadbear=100, _upside_down=True, color='cyan'))
+packer.add_item(Item(partno='test11', name='test', typeof='cube', width=2, height=5, depth=3, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+packer.add_item(Item(partno='test12', name='test', typeof='cube', width=1, height=9, depth=2, weight=1, level=1, loadbear=100, _upside_down=True, color='darkgreen'))
+packer.add_item(Item(partno='test13', name='test', typeof='cube', width=7, height=5, depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='orange'))
+packer.add_item(Item(partno='test14', name='test', typeof='cube', width=10, height=2, depth=1, weight=1, level=1, loadbear=100, _upside_down=True, color='lawngreen'))
+packer.add_item(Item(partno='test15', name='test', typeof='cube', width=3, height=2, depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='purple'))
+packer.add_item(Item(partno='test16', name='test', typeof='cube', width=5, height=7, depth=8, weight=1, level=1, loadbear=100, _upside_down=True, color='yellow'))
+packer.add_item(Item(partno='test17', name='test', typeof='cube', width=4, height=8, depth=3, weight=1, level=1, loadbear=100, _upside_down=True, color='white'))
+packer.add_item(Item(partno='test18', name='test', typeof='cube', width=2, height=11, depth=5, weight=1, level=1, loadbear=100, _upside_down=True, color='brown'))
+packer.add_item(Item(partno='test19', name='test', typeof='cube', width=8, height=3, depth=5, weight=1, level=1, loadbear=100, _upside_down=True, color='cyan'))
+packer.add_item(Item(partno='test20', name='test', typeof='cube', width=7, height=4, depth=5, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+packer.add_item(Item(partno='test21', name='test', typeof='cube', width=2, height=4, depth=11, weight=1, level=1, loadbear=100, _upside_down=True, color='darkgreen'))
+packer.add_item(Item(partno='test22', name='test', typeof='cube', width=1, height=3, depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='orange'))
+packer.add_item(Item(partno='test23', name='test', typeof='cube', width=10, height=5, depth=2, weight=1, level=1, loadbear=100, _upside_down=True, color='lawngreen'))
+packer.add_item(Item(partno='test24', name='test', typeof='cube', width=7, height=4, depth=5, weight=1, level=1, loadbear=100, _upside_down=True, color='purple'))
+packer.add_item(Item(partno='test25', name='test', typeof='cube', width=2, height=10, depth=3, weight=1, level=1, loadbear=100, _upside_down=True, color='yellow'))
+packer.add_item(Item(partno='test26', name='test', typeof='cube', width=3, height=8, depth=1, weight=1, level=1, loadbear=100, _upside_down=True, color='pink'))
+packer.add_item(Item(partno='test27', name='test', typeof='cube', width=7, height=2, depth=5, weight=1, level=1, loadbear=100, _upside_down=True, color='brown'))
+packer.add_item(Item(partno='test28', name='test', typeof='cube', width=8, height=9, depth=5, weight=1, level=1, loadbear=100, _upside_down=True, color='cyan'))
+packer.add_item(Item(partno='test29', name='test', typeof='cube', width=4, height=5, depth=10, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+packer.add_item(Item(partno='test30', name='test', typeof='cube', width=10, height=10, depth=2, weight=1, level=1, loadbear=100, _upside_down=True, color='darkgreen'))
 
 # calculate packing
 packer.pack(
     bigger_first=True,
-    distribute_items=100,
+    distribute_items=True,
     fix_point=True,
     check_stable=True,
     support_surface_ratio=0.75,
@@ -122,9 +92,9 @@ for item in b.unfitted_items:
 print("***************************************************")
 print('space utilization : {}%'.format(
     round(volume_t / float(volume) * 100, 2)))
-print('residual volumn : ', float(volume) - volume_t)
+print('residual volume : ', float(volume) - volume_t)
 print('unpack item : ', unfitted_name)
-print('unpack item volumn : ', volume_f)
+print('unpack item volume : ', volume_f)
 print("gravity distribution : ", b.gravity)
 stop = time.time()
 print('used time : ', stop - start)
@@ -137,4 +107,4 @@ fig = painter.plotBoxAndItems(
     write_num=False,
     fontsize=10
 )
-fig.show()
+fig.show()  # type: ignore

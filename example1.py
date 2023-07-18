@@ -11,35 +11,36 @@ This example is used to demonstrate the mixed packing of cube and cylinder.
 # init packing function
 packer = Packer()
 #  init bin
-box = Bin('example1', (5.6875, 10.75, 15.0), 70.0, 0, 0)
+box = Bin(partno='example1', width=5.6875, height=10.75,
+          depth=15.0, max_weight=70.0, corner=0, bin_type=0)
 packer.add_bin(box)
 #  add item
-packer.add_item(Item('50g [powder 1]', 'test', 'cube',
-                     (2, 2, 4), 1, 1, 100, True, 'red'))
-packer.add_item(Item('50g [powder 2]', 'test', 'cube',
-                     (2, 2, 4), 2, 1, 100, True, 'blue'))
-packer.add_item(Item('50g [powder 3]', 'test', 'cube',
-                     (2, 2, 4), 3, 1, 100, True, 'gray'))
-packer.add_item(Item('50g [powder 4]', 'test', 'cube',
-                     (2, 2, 4), 3, 1, 100, True, 'orange'))
-packer.add_item(Item('50g [powder 5]', 'test', 'cylinder',
-                     (2, 2, 4), 3, 1, 100, True, 'lawngreen'))
-packer.add_item(Item('50g [powder 6]', 'test',
-                     'cylinder', (2, 2, 4), 3, 1, 100, True, 'purple'))
-packer.add_item(Item('50g [powder 7]', 'test',
-                     'cylinder', (1, 1, 5), 3, 1, 100, True, 'yellow'))
-packer.add_item(Item('250g [powder 8]', 'test',
-                     'cylinder', (4, 4, 2), 4, 1, 100, True, 'pink'))
-packer.add_item(Item('250g [powder 9]', 'test',
-                     'cylinder', (4, 4, 2), 5, 1, 100, True, 'brown'))
-packer.add_item(Item('250g [powder 10]', 'test',
-                     'cube', (4, 4, 2), 6, 1, 100, True, 'cyan'))
-packer.add_item(Item('250g [powder 11]', 'test',
-                     'cylinder', (4, 4, 2), 7, 1, 100, True, 'olive'))
-packer.add_item(Item('250g [powder 12]', 'test',
-                     'cylinder', (4, 4, 2), 8, 1, 100, True, 'darkgreen'))
-packer.add_item(Item('250g [powder 13]', 'test',
-                     'cube', (4, 4, 2), 9, 1, 100, True, 'orange'))
+packer.add_item(Item(partno='50g [powder 1]', name="test", typeof='cube',
+                     width=2, height=2, depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='red'))
+packer.add_item(Item(partno='50g [powder 2]', name="test", typeof='cube',
+                     width=2, height=2, depth=4, weight=2, level=1, loadbear=100, _upside_down=True, color='blue'))
+packer.add_item(Item(partno='50g [powder 3]', name="test", typeof='cube',
+                     width=2, height=2, depth=4, weight=3, level=1, loadbear=100, _upside_down=True, color='gray'))
+packer.add_item(Item(partno='50g [powder 4]', name="test", typeof='cube',
+                     width=2, height=2, depth=4, weight=3, level=1, loadbear=100, _upside_down=True, color='orange'))
+packer.add_item(Item(partno='50g [powder 5]', name="test", typeof='cylinder',
+                     width=2, height=2, depth=4, weight=3, level=1, loadbear=100, _upside_down=True, color='lawngreen'))
+packer.add_item(Item(partno='50g [powder 6]', name="test", typeof='cylinder', width=2,
+                height=2, depth=4, weight=3, level=1, loadbear=100, _upside_down=True, color='purple'))
+packer.add_item(Item(partno='50g [powder 7]', name="test", typeof='cylinder', width=1,
+                height=1, depth=5, weight=3, level=1, loadbear=100, _upside_down=True, color='yellow'))
+packer.add_item(Item(partno='250g [powder 8]', name="test", typeof='cylinder', width=4,
+                height=4, depth=2, weight=4, level=1, loadbear=100, _upside_down=True, color='pink'))
+packer.add_item(Item(partno='250g [powder 9]', name="test", typeof='cylinder', width=4,
+                height=4, depth=2, weight=5, level=1, loadbear=100, _upside_down=True, color='brown'))
+packer.add_item(Item(partno='250g [powder 10]', name="test", typeof='cube', width=4,
+                height=4, depth=2, weight=6, level=1, loadbear=100, _upside_down=True, color='cyan'))
+packer.add_item(Item(partno='250g [powder 11]', name="test", typeof='cylinder', width=4,
+                height=4, depth=2, weight=7, level=1, loadbear=100, _upside_down=True, color='olive'))
+packer.add_item(Item(partno='250g [powder 12]', name="test", typeof='cylinder', width=4,
+                height=4, depth=2, weight=8, level=1, loadbear=100, _upside_down=True, color='darkgreen'))
+packer.add_item(Item(partno='250g [powder 13]', name="test", typeof='cube', width=4,
+                height=4, depth=2, weight=9, level=1, loadbear=100, _upside_down=True, color='orange'))
 
 # calculate packing
 packer.pack(
@@ -88,9 +89,9 @@ for item in b.unfitted_items:
 print("***************************************************")
 print('space utilization : {}%'.format(
     round(volume_t / float(volume) * 100, 2)))
-print('residual volumn : ', float(volume) - volume_t)
+print('residual volume : ', float(volume) - volume_t)
 print('unpack item : ', unfitted_name)
-print('unpack item volumn : ', volume_f)
+print('unpack item volume : ', volume_f)
 print("gravity distribution : ", b.gravity)
 stop = time.time()
 print('used time : ', stop - start)
@@ -103,4 +104,4 @@ fig = painter.plotBoxAndItems(
     write_num=False,
     fontsize=5
 )
-fig.show()
+fig.show()  # type: ignore
