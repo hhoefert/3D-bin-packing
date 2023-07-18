@@ -630,10 +630,13 @@ class Packer(BaseModel):
     # TODO refactor
     def gravityCenter(self, bin: Bin):
         """Deviation Of Cargo gravity distribution"""
+
+        # get the sizes TODO change to self
         w = int(bin.width)
         h = int(bin.height)
         d = int(bin.depth)
 
+        # divide the area into 4 chunks, TODO better way
         area = [[set(range(0, w // 2 + 1)), set(range(0, h // 2 + 1)), 0],
                 [set(range(w // 2 + 1, w + 1)), set(range(0, h // 2 + 1)), 0],
                 [set(range(0, w // 2 + 1)), set(range(h // 2 + 1, h + 1)), 0],
@@ -645,7 +648,7 @@ class Packer(BaseModel):
                     area[j][2] += weight
                     break
                 elif x_set.issubset(area[j][0]) and y_set.issubset(area[j][1]) == False and len(y_set & area[j][1]) != 0:
-                    y = len(y_set & area[j][1]) / (y_ed - y_st) * weight
+                    y = len(y_set & area[j][1]) / (y_end - y_start) * weight
                     area[j][2] += y
                     if j >= 2:
                         area[j - 2][2] += (weight - x)
@@ -653,7 +656,7 @@ class Packer(BaseModel):
                         area[j + 2][2] += (weight - y)
                     break
                 elif x_set.issubset(area[j][0]) == False and y_set.issubset(area[j][1]) and len(x_set & area[j][0]) != 0:
-                    x = len(x_set & area[j][0]) / (x_ed - x_st) * weight
+                    x = len(x_set & area[j][0]) / (x_end - x_start) * weight
                     area[j][2] += x
                     if j >= 2:
                         area[j - 2][2] += (weight - x)
@@ -662,11 +665,11 @@ class Packer(BaseModel):
                     break
                 elif x_set.issubset(area[j][0]) == False and y_set.issubset(area[j][1]) == False and len(
                         y_set & area[j][1]) != 0 and len(x_set & area[j][0]) != 0:
-                    all = (y_ed - y_st) * (x_ed - x_st)
+                    all = (y_end - y_start) * (x_end - x_start)
                     y = len(y_set & area[0][1])
-                    y_2 = y_ed - y_st - y
+                    y_2 = y_end - y_start - y
                     x = len(x_set & area[0][0])
-                    x_2 = x_ed - x_st - x
+                    x_2 = x_end - x_start - x
                     area[0][2] += x * y / all * weight
                     area[1][2] += x_2 * y / all * weight
                     area[2][2] += x * y_2 / all * weight
@@ -674,29 +677,30 @@ class Packer(BaseModel):
                     break
 
         for i in bin.items:
-            x_st = int(i.position[0])
-            y_st = int(i.position[1])
+            # get start and end positions, based on rotation
+            x_start = int(i.position[0])
+            y_start = int(i.position[1])
             if i.rotation_type == 0:
-                x_ed = int(i.position[0] + i.width)
-                y_ed = int(i.position[1] + i.height)
+                x_end = int(i.position[0] + i.width)
+                y_end = int(i.position[1] + i.height)
             elif i.rotation_type == 1:
-                x_ed = int(i.position[0] + i.height)
-                y_ed = int(i.position[1] + i.width)
+                x_end = int(i.position[0] + i.height)
+                y_end = int(i.position[1] + i.width)
             elif i.rotation_type == 2:
-                x_ed = int(i.position[0] + i.height)
-                y_ed = int(i.position[1] + i.depth)
+                x_end = int(i.position[0] + i.height)
+                y_end = int(i.position[1] + i.depth)
             elif i.rotation_type == 3:
-                x_ed = int(i.position[0] + i.depth)
-                y_ed = int(i.position[1] + i.height)
+                x_end = int(i.position[0] + i.depth)
+                y_end = int(i.position[1] + i.height)
             elif i.rotation_type == 4:
-                x_ed = int(i.position[0] + i.depth)
-                y_ed = int(i.position[1] + i.width)
+                x_end = int(i.position[0] + i.depth)
+                y_end = int(i.position[1] + i.width)
             elif i.rotation_type == 5:
-                x_ed = int(i.position[0] + i.width)
-                y_ed = int(i.position[1] + i.depth)
+                x_end = int(i.position[0] + i.width)
+                y_end = int(i.position[1] + i.depth)
 
-            x_set = set(range(x_st, int(x_ed) + 1))
-            y_set = set(range(y_st, y_ed + 1))
+            x_set = set(range(x_start, x_end + 1))
+            y_set = set(range(y_start, y_end + 1))
 
             calculate_weight(x_set, y_set, int(i.weight))
 
@@ -735,7 +739,7 @@ class Packer(BaseModel):
                                       support_surface_ratio=support_surface_ratio)
 
             # Deviation Of Cargo Gravity Center TODO
-            bin.gravity = self.gravityCenter(bin)
+            # bin.gravity = self.gravityCenter(bin)
 
             if distribute_items:
                 for item in bin.items:
