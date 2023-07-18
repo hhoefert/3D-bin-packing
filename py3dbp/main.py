@@ -37,7 +37,7 @@ class Item(BaseModel):
     def upside_down(self) -> bool:
         return self._upside_down if self.typeof == "cube" else False
 
-    def formatNumbers(self, number_of_decimals):
+    def format_numbers(self, number_of_decimals):
         self.width = set2Decimal(self.width, number_of_decimals)
         self.height = set2Decimal(self.height, number_of_decimals)
         self.depth = set2Decimal(self.depth, number_of_decimals)
@@ -47,19 +47,19 @@ class Item(BaseModel):
     def string(self):
         return "%s(%sx%sx%s, weight: %s) pos(%s) rt(%s) vol(%s)" % (
             self.partno, self.width, self.height, self.depth, self.weight,
-            self.position, self.rotation_type, self.getVolume()
+            self.position, self.rotation_type, self.get_volume()
         )
 
-    def getVolume(self):
+    def get_volume(self):
         return set2Decimal(self.width * self.height * self.depth, self.number_of_decimals)
 
-    def getMaxArea(self):
+    def get_max_area(self):
         a = sorted([self.width, self.height, self.depth], reverse=True) if self.upside_down else [
             self.width, self.height, self.depth]
 
         return set2Decimal(a[0] * a[1], self.number_of_decimals)
 
-    def getDimension(self):
+    def get_dimension(self):
         rotation_types = {
             RotationType.RT_WHD: [self.width, self.height, self.depth],
             RotationType.RT_HWD: [self.height, self.width, self.depth],
@@ -79,7 +79,7 @@ class Bin(BaseModel):
     depth: Decimal
     max_weight: Decimal
     corner: int = 0
-    items: list = []
+    items: list[Item] = []
     fit_items: np.array = np.array(        # type: ignore
         [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]])  # type: ignore
     unfitted_items: list = []
@@ -117,7 +117,7 @@ class Bin(BaseModel):
         total_weight = sum([item.weight for item in self.items])
         return set2Decimal(total_weight, self.number_of_decimals)
 
-    def put_item(self, item: Item, pivot: list[int], axis: Axis | None = None):
+    def put_item(self, item: Item, pivot: list[int]) -> bool:
         """ put item in bin TODO"""
         fit = False
         # save the items position and update its position to the pivot point
@@ -128,7 +128,7 @@ class Bin(BaseModel):
         # check each rotation
         for i in rotations:
             item.rotation_type = i
-            item_dimension = item.getDimension()
+            item_dimension = item.get_dimension()
 
             # rotate
             if (
@@ -162,8 +162,8 @@ class Bin(BaseModel):
                 self.items.append(copy.deepcopy(item))
             else:
                 item.position = valid_item_position
-
             return fit
+        return fit
 
     def check_fixpoint(self, item, item_dimension, pivot) -> bool:
         [w, h, d] = item_dimension
@@ -178,7 +178,7 @@ class Bin(BaseModel):
             x = self.check_width(
                 [x, (x + float(w)), y, (y + float(h)), z, (z + float(d))])
             # fix depth
-            z = self.checkDepth(
+            z = self.check_depth(
                 [x, (x + float(w)), y, (y + float(h)), z, (z + float(d))])
 
         # check stability on item
@@ -431,7 +431,7 @@ class Packer(BaseModel):
     items: list[Item] = []
     unfit_items: list[Item] = []
     total_items: int = 0
-    binding: list = []
+    binding: list[tuple] = []
 
     def add_bin(self, bin: Bin) -> None:
         self.bins.append(bin)
@@ -440,9 +440,8 @@ class Packer(BaseModel):
         self.total_items = len(self.items) + 1
         self.items.append(item)
 
-    def pack_item_to_bin(self, bin: Bin, item: Item, fix_point: bool, check_stable: bool, support_surface_ratio: float):
+    def pack_item_to_bin(self, bin: Bin, item: Item, fix_point: bool, check_stable: bool, support_surface_ratio: float) -> None:
         """Pack a given item into a given bin TODO docstring"""
-        fitted = False
         bin.fix_point = fix_point
         bin.check_stable = check_stable
         bin.support_surface_ratio = support_surface_ratio
@@ -454,64 +453,36 @@ class Packer(BaseModel):
             for i, corner in enumerate(corner_lst):
                 bin.put_corner(i, corner)
 
+        # add item at the start position if bin is empty
         elif not bin.items:
-            response = bin.put_item(item, item.position)
-
-            if not response:
+            success = bin.put_item(item, item.position)
+            if not success:
                 bin.unfitted_items.append(item)
             return
 
+        # try each axis and according pivot point until the first one fits
         for axis in range(0, 3):
-            items_in_bin = bin.items
-            for ib in items_in_bin:
+            for bin_item in bin.items:
                 pivot = [0, 0, 0]
-                w, h, d = ib.getDimension()
+                item_x, item_y, item_z = bin_item.position
+                w, h, d = bin_item.get_dimension()
                 if axis == Axis.WIDTH:
-                    pivot = [ib.position[0] + w,
-                             ib.position[1], ib.position[2]]
+                    pivot = [item_x + w,
+                             item_y,
+                             item_z]
                 elif axis == Axis.HEIGHT:
-                    pivot = [ib.position[0],
-                             ib.position[1] + h, ib.position[2]]
+                    pivot = [item_x,
+                             item_y + h,
+                             item_z]
                 elif axis == Axis.DEPTH:
-                    pivot = [ib.position[0],
-                             ib.position[1], ib.position[2] + d]
+                    pivot = [item_x,
+                             item_y,
+                             item_z + d]
 
-                if bin.put_item(item, pivot, axis):
-                    fitted = True
-                    break
-            if fitted:
-                break
-        if not fitted:
-            bin.unfitted_items.append(item)
-
-    def sortBinding(self, bin):
-        """ sorted by binding """
-        b, front, back = [], [], []
-        for i in range(len(self.binding)):
-            b.append([])
-            for item in self.items:
-                if item.name in self.binding[i]:
-                    b[i].append(item)
-                elif item.name not in self.binding:
-                    if len(b[0]) == 0 and item not in front:
-                        front.append(item)
-                    elif item not in back and item not in front:
-                        back.append(item)
-
-        min_c = min([len(i) for i in b])
-
-        sort_bind = []
-        for i in range(min_c):
-            for j in range(len(b)):
-                sort_bind.append(b[j][i])
-
-        for i in b:
-            for j in i:
-                if j not in sort_bind:
-                    self.unfit_items.append(j)
-
-        self.items = front + sort_bind + back
-        return
+                if bin.put_item(item, pivot):
+                    return
+        # if the return has not been reached, the item does not fit in the bin and ist stored accordingly
+        bin.unfitted_items.append(item)
 
     def putOrder(self):
         """Arrange the order of items """
@@ -698,20 +669,20 @@ class Packer(BaseModel):
             bin.format_numbers(number_of_decimals)
 
         for item in self.items:
-            item.formatNumbers(number_of_decimals)
+            item.format_numbers(number_of_decimals)
         # add binding attribute
         self.binding = binding
         # Bin : sorted by volumn
         self.bins.sort(key=lambda bin: bin.get_volume(), reverse=bigger_first)
         # Item : sorted by volumn -> sorted by loadbear -> sorted by level -> binding
-        self.items.sort(key=lambda item: item.getVolume(),
+        self.items.sort(key=lambda item: item.get_volume(),
                         reverse=bigger_first)
         # self.items.sort(key=lambda item: item.getMaxArea(), reverse=bigger_first)
         self.items.sort(key=lambda item: item.loadbear, reverse=True)
         self.items.sort(key=lambda item: item.level, reverse=False)
         # sorted by binding
         if binding != []:
-            self.sortBinding(bin)
+            self.sort_binding(bin)
 
         for idx, bin in enumerate(self.bins):
             # pack item to bin
@@ -722,7 +693,7 @@ class Packer(BaseModel):
             if binding != []:
                 # resorted
                 self.items.sort(
-                    key=lambda item: item.getVolume(), reverse=bigger_first)
+                    key=lambda item: item.get_volume(), reverse=bigger_first)
                 self.items.sort(key=lambda item: item.loadbear, reverse=True)
                 self.items.sort(key=lambda item: item.level, reverse=False)
                 # clear bin

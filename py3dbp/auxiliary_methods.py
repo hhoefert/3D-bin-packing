@@ -18,8 +18,8 @@ def rectIntersect(item1: Item, item2: Item, x: int, y: int) -> bool:
         bool: True if the rectangles intersect, False otherwise.
     """
     # get item dimensions
-    dim1 = item1.getDimension()
-    dim2 = item2.getDimension()
+    dim1 = item1.get_dimension()
+    dim2 = item2.get_dimension()
 
     # get the center of the x and the y edge of the rectangle
     center_x1 = item1.position[x] + dim1[x]/2
