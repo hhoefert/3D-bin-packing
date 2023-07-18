@@ -7,7 +7,6 @@ import numpy as np
 from matplotlib.patches import Circle, Rectangle
 from pydantic import BaseModel
 
-from .auxiliary_methods import set2Decimal
 from .constants import Axis, RotationType
 
 DEFAULT_NUMBER_OF_DECIMALS = 0
@@ -551,7 +550,6 @@ class Packer(BaseModel):
         """Deviation Of Cargo gravity distribution"""
         w = int(bin.width)
         h = int(bin.height)
-        d = int(bin.depth)
 
         area1 = [set(range(0, w//2+1)), set(range(0, h//2+1)), 0]
         area2 = [set(range(w//2+1, w+1)), set(range(0, h//2+1)), 0]
