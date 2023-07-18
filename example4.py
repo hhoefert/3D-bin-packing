@@ -14,7 +14,7 @@ packer = Packer()
 # Evergreen Real Container (20ft Steel Dry Cargo Container)
 # Unit cm/kg
 box = Bin(
-    partno='example4', width=589.8, height=243.8, depth=259.1, max_weight=28080, corner=15, bin_type=0
+    partno='example4', width=589.8, height=243.8, depth=259.1, max_weight=28080, corner=15, bin_type=1
 )
 
 packer.add_bin(box)
@@ -23,34 +23,34 @@ packer.add_bin(box)
 # 64 pcs per case ,  82 * 46 * 170 (85.12)
 for i in range(15):
     packer.add_item(Item(
-        partno='Dyson DC34 Animal{}'.format(str(i+1)), name='Dyson', typeof='cube', width=170, height=82, depth=46, weight=85.12, level=1, loadbear=100, _upside_down=True, color='#FF0000')
+        partno='Dyson DC34 Animal{}'.format(str(i+1)), name='Dyson', typeof='cube', width=170, height=82, depth=46, weight=85.12, level=1, loadbear=100, upside_down_=True, color='#FF0000')
     )
 
 # washing machine (85 * 60 *60 ,10 kG)
 # 1 pcs per case, 85 * 60 *60 (10)
 for i in range(18):
     packer.add_item(Item(
-        partno='wash{}'.format(str(i+1)), name='wash', typeof='cube', width=85, height=60, depth=60, weight=10, level=1, loadbear=100, _upside_down=True, color='#FFFF37'
+        partno='wash{}'.format(str(i+1)), name='wash', typeof='cube', width=85, height=60, depth=60, weight=10, level=1, loadbear=100, upside_down_=True, color='#FFFF37'
     ))
 
 # 42U standard cabinet (60 * 80 * 200 , 80 kg)
 # one per box, 60 * 80 * 200 (80)
 for i in range(15):
     packer.add_item(Item(
-        partno='Cabinet{}'.format(str(i+1)), name='cabint', typeof='cube', width=60, height=80, depth=200, weight=80, level=1, loadbear=100, _upside_down=True, color='#842B00')
+        partno='Cabinet{}'.format(str(i+1)), name='cabinet', typeof='cube', width=60, height=80, depth=200, weight=80, level=1, loadbear=100, upside_down_=True, color='#842B00')
     )
 
 # Server (70 * 100 * 30 , 20 kg)
 # one per box , 70 * 100 * 30 (20)
 for i in range(42):
     packer.add_item(Item(
-        partno='Server{}'.format(str(i+1)), name='server', typeof='cube', width=70, height=100, depth=30, weight=20, level=1, loadbear=100, _upside_down=True, color='#0000E3')
+        partno='Server{}'.format(str(i+1)), name='server', typeof='cube', width=70, height=100, depth=30, weight=20, level=1, loadbear=100, upside_down_=True, color='#0000E3')
     )
 
 
 # calculate packing
 packer.pack(
-    # binding=[('server','cabint','wash')], # binding=['cabint','wash','server'], number_of_decimals=0
+    # binding=[('server','cabinet','wash')], # binding=['cabinet','wash','server'], number_of_decimals=0
     bigger_first=True, distribute_items=False, fix_point=True, check_stable=True, support_surface_ratio=0.75,
 )
 

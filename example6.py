@@ -14,28 +14,28 @@ Check stability on item - second rule
 packer = Packer()
 #  init bin
 box = Bin(partno='example6', width=5, height=4,
-          depth=7, max_weight=100, corner=0, bin_type=0)
+          depth=7, max_weight=100, corner=0, bin_type=1)
 #  add item
 # Item('item partno', (W,H,D), Weight, Packing Priority level, load bear, Upside down or not , 'item color')
 packer.add_bin(box)
 packer.add_item(Item(partno='Box-1', name='test', typeof='cube', width=5, height=4,
-                depth=1, weight=1, level=1, loadbear=100, _upside_down=True, color='yellow'))
+                depth=1, weight=1, level=1, loadbear=100, upside_down_=True, color='yellow'))
 packer.add_item(Item(partno='Box-2', name='test', typeof='cube', width=1, height=1,
-                depth=4, weight=1, level=2, loadbear=100, _upside_down=True, color='olive'))
+                depth=4, weight=1, level=2, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-3', name='test', typeof='cube', width=3, height=4,
-                depth=2, weight=1, level=3, loadbear=100, _upside_down=True, color='pink'))
+                depth=2, weight=1, level=3, loadbear=100, upside_down_=True, color='pink'))
 packer.add_item(Item(partno='Box-4', name='test', typeof='cube', width=1, height=1,
-                depth=4, weight=1, level=4, loadbear=100, _upside_down=True, color='olive'))
+                depth=4, weight=1, level=4, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-5', name='test', typeof='cube', width=1, height=2,
-                depth=1, weight=1, level=5, loadbear=100, _upside_down=True, color='pink'))
+                depth=1, weight=1, level=5, loadbear=100, upside_down_=True, color='pink'))
 packer.add_item(Item(partno='Box-6', name='test', typeof='cube', width=1, height=2,
-                depth=1, weight=1, level=6, loadbear=100, _upside_down=True, color='pink'))
+                depth=1, weight=1, level=6, loadbear=100, upside_down_=True, color='pink'))
 packer.add_item(Item(partno='Box-7', name='test', typeof='cube', width=1, height=1,
-                depth=4, weight=1, level=7, loadbear=100, _upside_down=True, color='olive'))
+                depth=4, weight=1, level=7, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-8', name='test', typeof='cube', width=1, height=1, depth=4, weight=1, level=8,
-                loadbear=100, _upside_down=True, color='olive'))  # Try switching WHD=(1, 1, 3) and (1, 1, 4) to compare the results
+                loadbear=100, upside_down_=True, color='olive'))  # Try switching WHD=(1, 1, 3) and (1, 1, 4) to compare the results
 packer.add_item(Item(partno='Box-9', name='test', typeof='cube', width=5, height=4,
-                depth=2, weight=1, level=9, loadbear=100, _upside_down=True, color='brown'))
+                depth=2, weight=1, level=9, loadbear=100, upside_down_=True, color='brown'))
 
 # calculate packing
 packer.pack(

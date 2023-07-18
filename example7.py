@@ -14,50 +14,50 @@ If you have multiple boxes, you can change distribute_items to achieve different
 packer = Packer()
 #  init bin
 box = Bin(partno='example7-Bin1', width=5, height=5,
-          depth=5, max_weight=100, corner=0, bin_type=0)
+          depth=5, max_weight=100, corner=0, bin_type=1)
 box2 = Bin(partno='example7-Bin2', width=3, height=3,
-           depth=5, max_weight=100, corner=0, bin_type=0)
+           depth=5, max_weight=100, corner=0, bin_type=1)
 #  add item
 # Item('item partno', (W,H,D), Weight, Packing Priority level, load bear, Upside down or not , 'item color')
 packer.add_bin(box)
 packer.add_bin(box2)
 
 packer.add_item(Item(partno='Box-1', name='test1', typeof='cube', width=5, height=4,
-                depth=1, weight=1, level=1, loadbear=100, _upside_down=True, color='yellow'))
+                depth=1, weight=1, level=1, loadbear=100, upside_down_=True, color='yellow'))
 packer.add_item(Item(partno='Box-2', name='test2', typeof='cube', width=1, height=2,
-                depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=4, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-3', name='test3', typeof='cube', width=1, height=2,
-                depth=3, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=3, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-4', name='test4', typeof='cube', width=1, height=2,
-                depth=2, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=2, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-5', name='test5', typeof='cube', width=1, height=2,
-                depth=3, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=3, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-6', name='test6', typeof='cube', width=1, height=2,
-                depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=4, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-7', name='test7', typeof='cube', width=1, height=2,
-                depth=2, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=2, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-8', name='test8', typeof='cube', width=1, height=2,
-                depth=3, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=3, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-9', name='test9', typeof='cube', width=1, height=2,
-                depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=4, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-10', name='test10', typeof='cube', width=1, height=2,
-                depth=3, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=3, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-11', name='test11', typeof='cube', width=1, height=2,
-                depth=2, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=2, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-12', name='test12', typeof='cube', width=5, height=4,
-                depth=1, weight=1, level=1, loadbear=100, _upside_down=True, color='pink'))
+                depth=1, weight=1, level=1, loadbear=100, upside_down_=True, color='pink'))
 packer.add_item(Item(partno='Box-13', name='test13', typeof='cube', width=1, height=1,
-                depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=4, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-14', name='test14', typeof='cube', width=1, height=2,
-                depth=1, weight=1, level=1, loadbear=100, _upside_down=True, color='pink'))
+                depth=1, weight=1, level=1, loadbear=100, upside_down_=True, color='pink'))
 packer.add_item(Item(partno='Box-15', name='test15', typeof='cube', width=1, height=2,
-                depth=1, weight=1, level=1, loadbear=100, _upside_down=True, color='pink'))
+                depth=1, weight=1, level=1, loadbear=100, upside_down_=True, color='pink'))
 packer.add_item(Item(partno='Box-16', name='test16', typeof='cube', width=1, height=1,
-                depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=4, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-17', name='test17', typeof='cube', width=1, height=1,
-                depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='olive'))
+                depth=4, weight=1, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='Box-18', name='test18', typeof='cube', width=5, height=4,
-                depth=2, weight=1, level=1, loadbear=100, _upside_down=True, color='brown'))
+                depth=2, weight=1, level=1, loadbear=100, upside_down_=True, color='brown'))
 
 # calculate packing
 packer.pack(

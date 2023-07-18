@@ -12,35 +12,35 @@ This example is used to demonstrate the mixed packing of cube and cylinder.
 packer = Packer()
 #  init bin
 box = Bin(partno='example1', width=5.6875, height=10.75,
-          depth=15.0, max_weight=70.0, corner=0, bin_type=0)
+          depth=15.0, max_weight=70.0, corner=0, bin_type=1)
 packer.add_bin(box)
 #  add item
 packer.add_item(Item(partno='50g [powder 1]', name="test", typeof='cube',
-                     width=2, height=2, depth=4, weight=1, level=1, loadbear=100, _upside_down=True, color='red'))
+                     width=2, height=2, depth=4, weight=1, level=1, loadbear=100, upside_down_=True, color='red'))
 packer.add_item(Item(partno='50g [powder 2]', name="test", typeof='cube',
-                     width=2, height=2, depth=4, weight=2, level=1, loadbear=100, _upside_down=True, color='blue'))
+                     width=2, height=2, depth=4, weight=2, level=1, loadbear=100, upside_down_=True, color='blue'))
 packer.add_item(Item(partno='50g [powder 3]', name="test", typeof='cube',
-                     width=2, height=2, depth=4, weight=3, level=1, loadbear=100, _upside_down=True, color='gray'))
+                     width=2, height=2, depth=4, weight=3, level=1, loadbear=100, upside_down_=True, color='gray'))
 packer.add_item(Item(partno='50g [powder 4]', name="test", typeof='cube',
-                     width=2, height=2, depth=4, weight=3, level=1, loadbear=100, _upside_down=True, color='orange'))
+                     width=2, height=2, depth=4, weight=3, level=1, loadbear=100, upside_down_=True, color='orange'))
 packer.add_item(Item(partno='50g [powder 5]', name="test", typeof='cylinder',
-                     width=2, height=2, depth=4, weight=3, level=1, loadbear=100, _upside_down=True, color='lawngreen'))
+                     width=2, height=2, depth=4, weight=3, level=1, loadbear=100, upside_down_=True, color='lawngreen'))
 packer.add_item(Item(partno='50g [powder 6]', name="test", typeof='cylinder', width=2,
-                height=2, depth=4, weight=3, level=1, loadbear=100, _upside_down=True, color='purple'))
+                height=2, depth=4, weight=3, level=1, loadbear=100, upside_down_=True, color='purple'))
 packer.add_item(Item(partno='50g [powder 7]', name="test", typeof='cylinder', width=1,
-                height=1, depth=5, weight=3, level=1, loadbear=100, _upside_down=True, color='yellow'))
+                height=1, depth=5, weight=3, level=1, loadbear=100, upside_down_=True, color='yellow'))
 packer.add_item(Item(partno='250g [powder 8]', name="test", typeof='cylinder', width=4,
-                height=4, depth=2, weight=4, level=1, loadbear=100, _upside_down=True, color='pink'))
+                height=4, depth=2, weight=4, level=1, loadbear=100, upside_down_=True, color='pink'))
 packer.add_item(Item(partno='250g [powder 9]', name="test", typeof='cylinder', width=4,
-                height=4, depth=2, weight=5, level=1, loadbear=100, _upside_down=True, color='brown'))
+                height=4, depth=2, weight=5, level=1, loadbear=100, upside_down_=True, color='brown'))
 packer.add_item(Item(partno='250g [powder 10]', name="test", typeof='cube', width=4,
-                height=4, depth=2, weight=6, level=1, loadbear=100, _upside_down=True, color='cyan'))
+                height=4, depth=2, weight=6, level=1, loadbear=100, upside_down_=True, color='cyan'))
 packer.add_item(Item(partno='250g [powder 11]', name="test", typeof='cylinder', width=4,
-                height=4, depth=2, weight=7, level=1, loadbear=100, _upside_down=True, color='olive'))
+                height=4, depth=2, weight=7, level=1, loadbear=100, upside_down_=True, color='olive'))
 packer.add_item(Item(partno='250g [powder 12]', name="test", typeof='cylinder', width=4,
-                height=4, depth=2, weight=8, level=1, loadbear=100, _upside_down=True, color='darkgreen'))
+                height=4, depth=2, weight=8, level=1, loadbear=100, upside_down_=True, color='darkgreen'))
 packer.add_item(Item(partno='250g [powder 13]', name="test", typeof='cube', width=4,
-                height=4, depth=2, weight=9, level=1, loadbear=100, _upside_down=True, color='orange'))
+                height=4, depth=2, weight=9, level=1, loadbear=100, upside_down_=True, color='orange'))
 
 # calculate packing
 packer.pack(

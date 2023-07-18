@@ -13,16 +13,16 @@ Check stability on item - first rule
 packer = Packer()
 #  init bin
 box = Bin(partno='example5', width=5, height=4,
-          depth=3, max_weight=100, corner=0, bin_type=0)
+          depth=3, max_weight=100, corner=0, bin_type=1)
 #  add item
 # Item('item partno', (W,H,D), Weight, Packing Priority level, load bear, Upside down or not , 'item color')
 packer.add_bin(box)
 packer.add_item(Item(partno='Box-3', name='test', typeof='cube', width=2, height=5,
-                depth=2, weight=1, level=1, loadbear=100, _upside_down=True, color='pink'))
+                depth=2, weight=1, level=1, loadbear=100, upside_down_=True, color='pink'))
 packer.add_item(Item(partno='Box-3', name='test', typeof='cube', width=2, height=3, depth=2, weight=1, level=2,
-                loadbear=100, _upside_down=True, color='pink'))  # Try switching WHD=(2, 2, 2) and (2, 3, 2) to compare the results
+                loadbear=100, upside_down_=True, color='pink'))  # Try switching WHD=(2, 2, 2) and (2, 3, 2) to compare the results
 packer.add_item(Item(partno='Box-4', name='test', typeof='cube', width=5, height=4,
-                depth=1, weight=1, level=3, loadbear=100, _upside_down=True, color='brown'))
+                depth=1, weight=1, level=3, loadbear=100, upside_down_=True, color='brown'))
 
 # calculate packing
 packer.pack(

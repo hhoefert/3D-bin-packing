@@ -4,7 +4,6 @@ from typing import Literal
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
 import numpy as np
-# required to plot a representation of Bin and contained items
 from matplotlib.patches import Circle, Rectangle
 from pydantic import BaseModel
 
@@ -26,7 +25,7 @@ class Item(BaseModel):
     level: int  # Packing Priority level, choose 1-3
     loadbear: int
     # Upside down?
-    _upside_down: bool
+    upside_down_: bool
     color: str
     rotation_type: int = 0
     position: list[int] = START_POSITION
@@ -34,7 +33,11 @@ class Item(BaseModel):
 
     @property
     def upside_down(self) -> bool:
-        return self._upside_down if self.typeof == "cube" else False
+        return self.upside_down_ if self.typeof == "cube" else False
+
+    @upside_down.setter
+    def upside_down(self, value: bool) -> None:
+        self.upside_down_ = value
 
     def string(self):
         return "%s(%sx%sx%s, weight: %s) pos(%s) rt(%s) vol(%s)" % (
@@ -43,13 +46,12 @@ class Item(BaseModel):
         )
 
     def get_volume(self):
-        return set2Decimal(self.width * self.height * self.depth, self.number_of_decimals)
+        return self.width * self.height * self.depth
 
     def get_max_area(self):
         a = sorted([self.width, self.height, self.depth], reverse=True) if self.upside_down else [
             self.width, self.height, self.depth]
-
-        return set2Decimal(a[0] * a[1], self.number_of_decimals)
+        return a[0] * a[1]
 
     def get_dimension(self):
         rotation_types = {
@@ -242,7 +244,7 @@ class Bin(BaseModel):
 
         # add the item with the correct dimensions to the fitted items
         self.fit_items.append([x, x+float(w), y, y+float(h), z, z+float(d)])
-        item.position = [set2Decimal(x), set2Decimal(y), set2Decimal(z)]
+        item.position = [x, y, z]
         return True
 
     def calculate_rect_intersect(self, rect1: list[float], rect2: list[float]) -> float:
@@ -426,7 +428,7 @@ class Bin(BaseModel):
                     weight=0,
                     level=0,
                     loadbear=0,
-                    _upside_down=True,
+                    upside_down_=True,
                     color="#000000"))
             return corner_list
         return []
@@ -434,9 +436,9 @@ class Bin(BaseModel):
     # TODO check
     def put_corner(self, pos_idx: int, corner: Item) -> None:
         """put corner in bin"""
-        x = set2Decimal(self.width - self.corner)
-        y = set2Decimal(self.height - self.corner)
-        z = set2Decimal(self.depth - self.corner)
+        x = self.width - self.corner
+        y = self.height - self.corner
+        z = self.depth - self.corner
         pos = [[0, 0, 0], [0, 0, z], [0, y, z], [0, y, 0],
                [x, y, 0], [x, 0, 0], [x, 0, z], [x, y, z]]
         corner.position = pos[pos_idx]
@@ -826,7 +828,7 @@ class Painter:
         for item in self.items:
             rt = item.rotation_type
             x, y, z = item.position
-            [w, h, d] = item.getDimension()
+            [w, h, d] = item.get_dimension()
             color = item.color
             text = item.partno if write_num else ""
 
