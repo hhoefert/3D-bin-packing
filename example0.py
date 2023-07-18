@@ -21,12 +21,12 @@ box = Bin(
     put_type=0
 )
 
-packer.addBin(box)
+packer.add_bin(box)
 
 # dyson DC34 (20.5 * 11.5 * 32.2 ,1.33kg)
 # 64 pcs per case ,  82 * 46 * 170 (85.12)
 for i in range(5):
-    packer.addItem(Item(
+    packer.add_item(Item(
         partno='Dyson DC34 Animal{}'.format(str(i+1)),
         name='Dyson',
         typeof='cube',
@@ -41,7 +41,7 @@ for i in range(5):
 # washing machine (85 * 60 *60 ,10 kG)
 # 1 pcs per case, 85 * 60 *60 (10)
 for i in range(10):
-    packer.addItem(Item(
+    packer.add_item(Item(
         partno='wash{}'.format(str(i+1)),
         name='wash',
         typeof='cube',
@@ -56,7 +56,7 @@ for i in range(10):
 # 42U standard cabinet (60 * 80 * 200 , 80 kg)
 # one per box, 60 * 80 * 200 (80)
 for i in range(5):
-    packer.addItem(Item(
+    packer.add_item(Item(
         partno='Cabinet{}'.format(str(i+1)),
         name='cabint',
         typeof='cube',
@@ -71,7 +71,7 @@ for i in range(5):
 # Server (70 * 100 * 30 , 20 kg)
 # one per box , 70 * 100 * 30 (20)
 for i in range(10):
-    packer.addItem(Item(
+    packer.add_item(Item(
         partno='Server{}'.format(str(i+1)),
         name='server',
         typeof='cube',

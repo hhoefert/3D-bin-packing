@@ -164,7 +164,7 @@ def getBoxAndItem(data):
         corner=box_data['coner'],
         put_type=box_data['openTop'][0]
     )
-    packer.addBin(box)
+    packer.add_bin(box)
     # get item data  TODO
     item_data = data["item"]
     color_dict = {
@@ -178,7 +178,7 @@ def getBoxAndItem(data):
     }
     for i in item_data:
         for j in range(i['count']):
-            packer.addItem(Item(
+            packer.add_item(Item(
                 partno=i['name']+'-{}'.format(str(j+1)),
                 name=i['name'],
                 typeof='cylinder' if i['type'] == 2 else 'cube',

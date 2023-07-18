@@ -15,13 +15,13 @@ packer = Packer()
 box = Bin('example5', (5, 4, 3), 100, 0, 0)
 #  add item
 # Item('item partno', (W,H,D), Weight, Packing Priority level, load bear, Upside down or not , 'item color')
-packer.addBin(box)
-packer.addItem(Item(partno='Box-3', name='test', typeof='cube', WHD=(2, 5, 2),
-               weight=1, level=1, loadbear=100, upside_down=True, color='pink'))
-packer.addItem(Item(partno='Box-3', name='test', typeof='cube', WHD=(2, 3, 2), weight=1, level=2, loadbear=100,
-               upside_down=True, color='pink'))  # Try switching WHD=(2, 2, 2) and (2, 3, 2) to compare the results
-packer.addItem(Item(partno='Box-4', name='test', typeof='cube', WHD=(5, 4, 1),
-               weight=1, level=3, loadbear=100, upside_down=True, color='brown'))
+packer.add_bin(box)
+packer.add_item(Item(partno='Box-3', name='test', typeof='cube', WHD=(2, 5, 2),
+                     weight=1, level=1, loadbear=100, upside_down=True, color='pink'))
+packer.add_item(Item(partno='Box-3', name='test', typeof='cube', WHD=(2, 3, 2), weight=1, level=2, loadbear=100,
+                     upside_down=True, color='pink'))  # Try switching WHD=(2, 2, 2) and (2, 3, 2) to compare the results
+packer.add_item(Item(partno='Box-4', name='test', typeof='cube', WHD=(5, 4, 1),
+                     weight=1, level=3, loadbear=100, upside_down=True, color='brown'))
 
 # calculate packing
 packer.pack(

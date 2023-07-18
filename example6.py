@@ -16,25 +16,25 @@ packer = Packer()
 box = Bin('example6', (5, 4, 7), 100, 0, 0)
 #  add item
 # Item('item partno', (W,H,D), Weight, Packing Priority level, load bear, Upside down or not , 'item color')
-packer.addBin(box)
-packer.addItem(Item(partno='Box-1', name='test', typeof='cube', WHD=(5, 4, 1),
-               weight=1, level=1, loadbear=100, upside_down=True, color='yellow'))
-packer.addItem(Item(partno='Box-2', name='test', typeof='cube', WHD=(1, 1, 4),
-               weight=1, level=2, loadbear=100, upside_down=True, color='olive'))
-packer.addItem(Item(partno='Box-3', name='test', typeof='cube', WHD=(3, 4, 2),
-               weight=1, level=3, loadbear=100, upside_down=True, color='pink'))
-packer.addItem(Item(partno='Box-4', name='test', typeof='cube', WHD=(1, 1, 4),
-               weight=1, level=4, loadbear=100, upside_down=True, color='olive'))
-packer.addItem(Item(partno='Box-5', name='test', typeof='cube', WHD=(1, 2, 1),
-               weight=1, level=5, loadbear=100, upside_down=True, color='pink'))
-packer.addItem(Item(partno='Box-6', name='test', typeof='cube', WHD=(1, 2, 1),
-               weight=1, level=6, loadbear=100, upside_down=True, color='pink'))
-packer.addItem(Item(partno='Box-7', name='test', typeof='cube', WHD=(1, 1, 4),
-               weight=1, level=7, loadbear=100, upside_down=True, color='olive'))
-packer.addItem(Item(partno='Box-8', name='test', typeof='cube', WHD=(1, 1, 4), weight=1, level=8, loadbear=100,
-               upside_down=True, color='olive'))  # Try switching WHD=(1, 1, 3) and (1, 1, 4) to compare the results
-packer.addItem(Item(partno='Box-9', name='test', typeof='cube', WHD=(5, 4, 2),
-               weight=1, level=9, loadbear=100, upside_down=True, color='brown'))
+packer.add_bin(box)
+packer.add_item(Item(partno='Box-1', name='test', typeof='cube', WHD=(5, 4, 1),
+                     weight=1, level=1, loadbear=100, upside_down=True, color='yellow'))
+packer.add_item(Item(partno='Box-2', name='test', typeof='cube', WHD=(1, 1, 4),
+                     weight=1, level=2, loadbear=100, upside_down=True, color='olive'))
+packer.add_item(Item(partno='Box-3', name='test', typeof='cube', WHD=(3, 4, 2),
+                     weight=1, level=3, loadbear=100, upside_down=True, color='pink'))
+packer.add_item(Item(partno='Box-4', name='test', typeof='cube', WHD=(1, 1, 4),
+                     weight=1, level=4, loadbear=100, upside_down=True, color='olive'))
+packer.add_item(Item(partno='Box-5', name='test', typeof='cube', WHD=(1, 2, 1),
+                     weight=1, level=5, loadbear=100, upside_down=True, color='pink'))
+packer.add_item(Item(partno='Box-6', name='test', typeof='cube', WHD=(1, 2, 1),
+                     weight=1, level=6, loadbear=100, upside_down=True, color='pink'))
+packer.add_item(Item(partno='Box-7', name='test', typeof='cube', WHD=(1, 1, 4),
+                     weight=1, level=7, loadbear=100, upside_down=True, color='olive'))
+packer.add_item(Item(partno='Box-8', name='test', typeof='cube', WHD=(1, 1, 4), weight=1, level=8, loadbear=100,
+                     upside_down=True, color='olive'))  # Try switching WHD=(1, 1, 3) and (1, 1, 4) to compare the results
+packer.add_item(Item(partno='Box-9', name='test', typeof='cube', WHD=(5, 4, 2),
+                     weight=1, level=9, loadbear=100, upside_down=True, color='brown'))
 
 # calculate packing
 packer.pack(

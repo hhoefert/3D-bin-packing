@@ -14,18 +14,18 @@ packer = Packer()
 box = Bin('example3', (6, 1, 5), 100, 0, put_type=0)
 #  add item
 # Item('item partno', (W,H,D), Weight, Packing Priority level, load bear, Upside down or not , 'item color')
-packer.addBin(box)
+packer.add_bin(box)
 # If all item WHD=(2, 1, 3) , item can be fully packed into box, but if choose one item and modify WHD=(3, 1, 2) , item can't be fully packed into box.
-packer.addItem(Item(partno='Box-1', name='test', typeof='cube', WHD=(2, 1, 3),
-               weight=1, level=1, loadbear=100, upside_down=True, color='yellow'))
-packer.addItem(Item(partno='Box-2', name='test', typeof='cube', WHD=(3, 1, 2), weight=1, level=1, loadbear=100,
-               upside_down=True, color='pink'))  # Try switching WHD=(3, 1, 2) and (2, 1, 3) to compare the results
-packer.addItem(Item(partno='Box-3', name='test', typeof='cube', WHD=(2, 1, 3),
-               weight=1, level=1, loadbear=100, upside_down=True, color='brown'))
-packer.addItem(Item(partno='Box-4', name='test', typeof='cube', WHD=(2, 1, 3),
-               weight=1, level=1, loadbear=100, upside_down=True, color='cyan'))
-packer.addItem(Item(partno='Box-5', name='test', typeof='cube', WHD=(2, 1, 3),
-               weight=1, level=1, loadbear=100, upside_down=True, color='olive'))
+packer.add_item(Item(partno='Box-1', name='test', typeof='cube', WHD=(2, 1, 3),
+                     weight=1, level=1, loadbear=100, upside_down=True, color='yellow'))
+packer.add_item(Item(partno='Box-2', name='test', typeof='cube', WHD=(3, 1, 2), weight=1, level=1, loadbear=100,
+                     upside_down=True, color='pink'))  # Try switching WHD=(3, 1, 2) and (2, 1, 3) to compare the results
+packer.add_item(Item(partno='Box-3', name='test', typeof='cube', WHD=(2, 1, 3),
+                     weight=1, level=1, loadbear=100, upside_down=True, color='brown'))
+packer.add_item(Item(partno='Box-4', name='test', typeof='cube', WHD=(2, 1, 3),
+                     weight=1, level=1, loadbear=100, upside_down=True, color='cyan'))
+packer.add_item(Item(partno='Box-5', name='test', typeof='cube', WHD=(2, 1, 3),
+                     weight=1, level=1, loadbear=100, upside_down=True, color='olive'))
 
 # calculate packing
 packer.pack(

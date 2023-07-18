@@ -24,7 +24,7 @@ class Item(BaseModel):
     height: Decimal
     depth: Decimal
     weight: Decimal
-    level: Literal[1, 2, 3]  # Packing Priority level, choose 1-3
+    level: int  # Packing Priority level, choose 1-3
     loadbear: int
     # Upside down?
     _upside_down: bool
@@ -35,7 +35,7 @@ class Item(BaseModel):
 
     @property
     def upside_down(self) -> bool:
-        return self._upside_down if self.typeof == 'cube' else False
+        return self._upside_down if self.typeof == "cube" else False
 
     def formatNumbers(self, number_of_decimals):
         self.width = set2Decimal(self.width, number_of_decimals)
@@ -95,7 +95,7 @@ class Bin(BaseModel):
     # def fit_items(self):
     #     return np.array([[0.0, float(self.width), 0.0, float(self.height), 0.0, 0.0]])
 
-    def formatNumbers(self, number_of_decimals) -> None:
+    def format_numbers(self, number_of_decimals) -> None:
         self.width = set2Decimal(self.width, number_of_decimals)
         self.height = set2Decimal(self.height, number_of_decimals)
         self.depth = set2Decimal(self.depth, number_of_decimals)
@@ -105,20 +105,20 @@ class Bin(BaseModel):
     def string(self) -> str:
         return "%s(%sx%sx%s, max_weight:%s) vol(%s)" % (
             self.partno, self.width, self.height, self.depth, self.max_weight,
-            self.getVolume()
+            self.get_volume()
         )
 
-    def getVolume(self) -> Decimal:
+    def get_volume(self) -> Decimal:
         return set2Decimal(
             self.width * self.height * self.depth, self.number_of_decimals
         )
 
-    def getTotalWeight(self) -> Decimal:
+    def get_total_weight(self) -> Decimal:
         total_weight = sum([item.weight for item in self.items])
         return set2Decimal(total_weight, self.number_of_decimals)
 
-    def putItem(self, item: Item, pivot: list[int], axis: Axis | None = None):
-        ''' put item in bin TODO'''
+    def put_item(self, item: Item, pivot: list[int], axis: Axis | None = None):
+        """ put item in bin TODO"""
         fit = False
         # save the items position and update its position to the pivot point
         valid_item_position = item.position
@@ -151,7 +151,7 @@ class Bin(BaseModel):
 
             # TODO position reset?
             # check if adding the item does not exceed the maximum allowed weight
-            if self.getTotalWeight() + item.weight > self.max_weight:
+            if self.get_total_weight() + item.weight > self.max_weight:
                 return False
 
             # fix point float prob
@@ -172,10 +172,10 @@ class Bin(BaseModel):
         # TODO why three times?
         for i in range(3):
             # fix height
-            y = self.checkHeight(
+            y = self.check_height(
                 [x, (x + float(w)), y, (y + float(h)), z, (z + float(d))])
             # fix width
-            x = self.checkWidth(
+            x = self.check_width(
                 [x, (x + float(w)), y, (y + float(h)), z, (z + float(d))])
             # fix depth
             z = self.checkDepth(
@@ -218,7 +218,7 @@ class Bin(BaseModel):
         return True
 
     def calculate_rect_intersect(self, rect1: list[float], rect2: list[float]) -> float:
-        '''
+        """
         Calculate the intersecting area of two rectangles.
 
         Args:
@@ -227,7 +227,7 @@ class Bin(BaseModel):
 
         Returns:
             float: The intersecting area of the two rectangles. Returns 0 if there is no intersection.
-        '''
+        """
 
         # Get the coordinates of the rectangles
         x1, y1, x2, y2 = rect1
@@ -247,7 +247,7 @@ class Bin(BaseModel):
         intersecting_area: float = (x_right - x_left) * (y_bottom - y_top)
         return intersecting_area
 
-    def checkDepth(self, not_fixed_item: list[float]) -> float:
+    def check_depth(self, not_fixed_item: list[float]) -> float:
         """Takes an item and tries to find the point minimizing the gap in the z-dimension (depth). The method checks if the item can be placed deeper than the current pivot point suggests.
 
         Args:
@@ -292,7 +292,7 @@ class Bin(BaseModel):
         # If no suitable space is found, fix the item at the initial lower limit of not_fixed_item range
         return not_fixed_item[4]
 
-    def checkWidth(self, not_fixed_item: list[float]) -> float:
+    def check_width(self, not_fixed_item: list[float]) -> float:
         """Takes an item and tries to find the point minimizing the gap in the x-dimension (width). The method checks if the item can be placed deeper than the current pivot point suggests.
 
         Args:
@@ -337,7 +337,7 @@ class Bin(BaseModel):
         # If no suitable space is found, fix the item at the initial lower limit of not_fixed_item range
         return not_fixed_item[0]
 
-    def checkHeight(self, not_fixed_item: list[float]) -> float:
+    def check_height(self, not_fixed_item: list[float]) -> float:
         """Takes an item and tries to find the point minimizing the gap in the y-dimension (height). The method checks if the item can be placed deeper than the current pivot point suggests.
 
         Args:
@@ -382,85 +382,80 @@ class Bin(BaseModel):
         # If no suitable space is found, fix the item at the initial lower limit of not_fixed_item range
         return not_fixed_item[2]
 
-    def addCorner(self):
-        '''add container coner '''
+    def create_corners(self) -> list[Item]:
+        """Add the corners of a container"""
         if self.corner != 0:
             corner = set2Decimal(self.corner)
-            corner_list = []
+            corner_list: list[Item] = list()
             for i in range(8):
-                a = Item(
-                    partno='corner{}'.format(i),
-                    name='corner',
-                    typeof='cube',
+                corner_list.append(Item(
+                    partno="Corner{}".format(i),
+                    name="Corner",
+                    typeof="cube",
                     width=corner,
                     height=corner,
                     depth=corner,
-                    weight=0,
+                    weight=set2Decimal(0),
                     level=0,
                     loadbear=0,
                     _upside_down=True,
-                    color='#000000')
-
-                corner_list.append(a)
+                    color="#000000"))
             return corner_list
+        return []
 
-    def putCorner(self, info, item):
-        '''put coner in bin '''
-        fit = False
+    # TODO check
+    def put_corner(self, pos_idx: int, corner: Item) -> None:
+        """put corner in bin"""
         x = set2Decimal(self.width - self.corner)
         y = set2Decimal(self.height - self.corner)
         z = set2Decimal(self.depth - self.corner)
         pos = [[0, 0, 0], [0, 0, z], [0, y, z], [0, y, 0],
                [x, y, 0], [x, 0, 0], [x, 0, z], [x, y, z]]
-        item.position = pos[info]
+        corner.position = pos[pos_idx]
+        self.items.append(corner)
+
+        corner_pos = [float(corner.position[0]), float(corner.position[0])+float(self.corner), float(corner.position[1]), float(
+            corner.position[1])+float(self.corner), float(corner.position[2]), float(corner.position[2])+float(self.corner)]
+
+        self.fit_items = np.append(
+            self.fit_items, np.array([corner_pos]), axis=0)
+
+    def clear(self) -> None:
+        """Clear the bin from all items"""
+        self.items = []
+        self.fit_items = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]])
+
+
+class Packer(BaseModel):
+    bins: list[Bin] = []
+    items: list[Item] = []
+    unfit_items: list[Item] = []
+    total_items: int = 0
+    binding: list = []
+
+    def add_bin(self, bin: Bin) -> None:
+        self.bins.append(bin)
+
+    def add_item(self, item: Item) -> None:
+        self.total_items = len(self.items) + 1
         self.items.append(item)
 
-        corner = [float(item.position[0]), float(item.position[0])+float(self.corner), float(item.position[1]), float(
-            item.position[1])+float(self.corner), float(item.position[2]), float(item.position[2])+float(self.corner)]
-
-        self.fit_items = np.append(self.fit_items, np.array([corner]), axis=0)
-        return
-
-    def clearBin(self):
-        ''' clear item which in bin '''
-        self.items = []
-        self.fit_items = np.array([[0, self.width, 0, self.height, 0, 0]])
-        return
-
-
-class Packer:
-
-    def __init__(self):
-        self.bins = []
-        self.items = []
-        self.unfit_items = []
-        self.total_items = 0
-        self.binding = []
-        # self.apex = []
-
-    def addBin(self, bin):
-        return self.bins.append(bin)
-
-    def addItem(self, item):
-        self.total_items = len(self.items) + 1
-
-        return self.items.append(item)
-
-    def pack2Bin(self, bin, item, fix_point, check_stable, support_surface_ratio):
-        ''' pack item to bin '''
+    def pack_item_to_bin(self, bin: Bin, item: Item, fix_point: bool, check_stable: bool, support_surface_ratio: float):
+        """Pack a given item into a given bin TODO docstring"""
         fitted = False
         bin.fix_point = fix_point
         bin.check_stable = check_stable
         bin.support_surface_ratio = support_surface_ratio
 
-        # first put item on (0,0,0) , if corner exist ,first add corner in box.
+        # if corner exists, first add corner in box.
+        # put item on (0,0,0)
         if bin.corner != 0 and not bin.items:
-            corner_lst = bin.addCorner()
-            for i in range(len(corner_lst)):
-                bin.putCorner(i, corner_lst[i])
+            corner_lst = bin.create_corners()
+            for i, corner in enumerate(corner_lst):
+                bin.put_corner(i, corner)
 
         elif not bin.items:
-            response = bin.putItem(item, item.position)
+            response = bin.put_item(item, item.position)
 
             if not response:
                 bin.unfitted_items.append(item)
@@ -481,7 +476,7 @@ class Packer:
                     pivot = [ib.position[0],
                              ib.position[1], ib.position[2] + d]
 
-                if bin.putItem(item, pivot, axis):
+                if bin.put_item(item, pivot, axis):
                     fitted = True
                     break
             if fitted:
@@ -490,7 +485,7 @@ class Packer:
             bin.unfitted_items.append(item)
 
     def sortBinding(self, bin):
-        ''' sorted by binding '''
+        """ sorted by binding """
         b, front, back = [], [], []
         for i in range(len(self.binding)):
             b.append([])
@@ -519,7 +514,7 @@ class Packer:
         return
 
     def putOrder(self):
-        '''Arrange the order of items '''
+        """Arrange the order of items """
         r = []
         for i in self.bins:
             # open top container
@@ -537,9 +532,9 @@ class Packer:
         return
 
     def gravityCenter_old(self, bin):
-        ''' 
+        """ 
         Deviation Of Cargo gravity distribution
-        '''
+        """
         w = int(bin.width)
         h = int(bin.height)
         d = int(bin.depth)
@@ -619,9 +614,9 @@ class Packer:
         return result
 
     def gravityCenter(self, bin):
-        ''' 
+        """ 
         Deviation Of Cargo gravity distribution
-        '''
+        """
         w = int(bin.width)
         h = int(bin.height)
         d = int(bin.depth)
@@ -697,17 +692,17 @@ class Packer:
         return result
 
     def pack(self, bigger_first=False, distribute_items=True, fix_point=True, check_stable=True, support_surface_ratio=0.75, binding=[], number_of_decimals=DEFAULT_NUMBER_OF_DECIMALS):
-        '''pack master func '''
+        """pack master func """
         # set decimals
         for bin in self.bins:
-            bin.formatNumbers(number_of_decimals)
+            bin.format_numbers(number_of_decimals)
 
         for item in self.items:
             item.formatNumbers(number_of_decimals)
         # add binding attribute
         self.binding = binding
         # Bin : sorted by volumn
-        self.bins.sort(key=lambda bin: bin.getVolume(), reverse=bigger_first)
+        self.bins.sort(key=lambda bin: bin.get_volume(), reverse=bigger_first)
         # Item : sorted by volumn -> sorted by loadbear -> sorted by level -> binding
         self.items.sort(key=lambda item: item.getVolume(),
                         reverse=bigger_first)
@@ -721,8 +716,8 @@ class Packer:
         for idx, bin in enumerate(self.bins):
             # pack item to bin
             for item in self.items:
-                self.pack2Bin(bin, item, fix_point, check_stable,
-                              support_surface_ratio)
+                self.pack_item_to_bin(bin, item, fix_point, check_stable,
+                                      support_surface_ratio)
 
             if binding != []:
                 # resorted
@@ -736,8 +731,8 @@ class Packer:
                 bin.fit_items = np.array([[0, bin.width, 0, bin.height, 0, 0]])
                 # repacking
                 for item in self.items:
-                    self.pack2Bin(bin, item, fix_point,
-                                  check_stable, support_surface_ratio)
+                    self.pack_item_to_bin(bin, item, fix_point,
+                                          check_stable, support_surface_ratio)
 
             # Deviation Of Cargo Gravity Center
             self.bins[idx].gravity = self.gravityCenter(bin)
@@ -769,12 +764,12 @@ class Painter:
         self.height = bins.height
         self.depth = bins.depth
 
-    def _plotCube(self, ax, x, y, z, dx, dy, dz, color='red', mode=2, linewidth=1, text="", fontsize=15, alpha=0.5):
+    def _plotCube(self, ax, x, y, z, dx, dy, dz, color="red", mode=2, linewidth=1, text="", fontsize=15, alpha=0.5):
         """ Auxiliary function to plot a cube. code taken somewhere from the web.  """
         xx = [x, x, x+dx, x+dx, x]
         yy = [y, y+dy, y+dy, y, y]
 
-        kwargs = {'alpha': 1, 'color': color, 'linewidth': linewidth}
+        kwargs = {"alpha": 1, "color": color, "linewidth": linewidth}
         if mode == 1:
             ax.plot3D(xx, yy, [z]*5, **kwargs)
             ax.plot3D(xx, yy, [z+dz]*5, **kwargs)
@@ -783,12 +778,12 @@ class Painter:
             ax.plot3D([x+dx, x+dx], [y+dy, y+dy], [z, z+dz], **kwargs)
             ax.plot3D([x+dx, x+dx], [y, y], [z, z+dz], **kwargs)
         else:
-            p = Rectangle((x, y), dx, dy, fc=color, ec='black', alpha=alpha)
-            p2 = Rectangle((x, y), dx, dy, fc=color, ec='black', alpha=alpha)
-            p3 = Rectangle((y, z), dy, dz, fc=color, ec='black', alpha=alpha)
-            p4 = Rectangle((y, z), dy, dz, fc=color, ec='black', alpha=alpha)
-            p5 = Rectangle((x, z), dx, dz, fc=color, ec='black', alpha=alpha)
-            p6 = Rectangle((x, z), dx, dz, fc=color, ec='black', alpha=alpha)
+            p = Rectangle((x, y), dx, dy, fc=color, ec="black", alpha=alpha)
+            p2 = Rectangle((x, y), dx, dy, fc=color, ec="black", alpha=alpha)
+            p3 = Rectangle((y, z), dy, dz, fc=color, ec="black", alpha=alpha)
+            p4 = Rectangle((y, z), dy, dz, fc=color, ec="black", alpha=alpha)
+            p5 = Rectangle((x, z), dx, dz, fc=color, ec="black", alpha=alpha)
+            p6 = Rectangle((x, z), dx, dz, fc=color, ec="black", alpha=alpha)
             ax.add_patch(p)
             ax.add_patch(p2)
             ax.add_patch(p3)
@@ -798,7 +793,7 @@ class Painter:
 
             if text != "":
                 ax.text((x + dx/2), (y + dy/2), (z + dz/2), str(text),
-                        color='black', fontsize=fontsize, ha='center', va='center')
+                        color="black", fontsize=fontsize, ha="center", va="center")
 
             art3d.pathpatch_2d_to_3d(p, z=z, zdir="z")
             art3d.pathpatch_2d_to_3d(p2, z=z+dz, zdir="z")
@@ -807,7 +802,7 @@ class Painter:
             art3d.pathpatch_2d_to_3d(p5, z=y, zdir="y")
             art3d.pathpatch_2d_to_3d(p6, z=y + dy, zdir="y")
 
-    def _plotCylinder(self, ax, x, y, z, dx, dy, dz, color='red', mode=2, text="", fontsize=10, alpha=0.2):
+    def _plotCylinder(self, ax, x, y, z, dx, dy, dz, color="red", mode=2, text="", fontsize=10, alpha=0.2):
         """ Auxiliary function to plot a Cylinder  """
         # plot the two circles above and below the cylinder
         p = Circle((x+dx/2, y+dy/2), radius=dx/2, color=color, alpha=0.5)
@@ -827,16 +822,16 @@ class Painter:
                         fc=color, alpha=alpha, color=color)
         if text != "":
             ax.text((x + dx/2), (y + dy/2), (z + dz/2), str(text),
-                    color='black', fontsize=fontsize, ha='center', va='center')
+                    color="black", fontsize=fontsize, ha="center", va="center")
 
     def plotBoxAndItems(self, title="", alpha=0.2, write_num=False, fontsize=10):
         """ side effective. Plot the Bin and the items it contains. """
         fig = plt.figure()
-        axGlob = plt.axes(projection='3d')
+        axGlob = plt.axes(projection="3d")
 
         # plot bin
         self._plotCube(axGlob, 0, 0, 0, float(self.width), float(self.height), float(
-            self.depth), color='black', mode=1, linewidth=2, text="")
+            self.depth), color="black", mode=1, linewidth=2, text="")
 
         counter = 0
         # fit rotation type
@@ -847,11 +842,11 @@ class Painter:
             color = item.color
             text = item.partno if write_num else ""
 
-            if item.typeof == 'cube':
+            if item.typeof == "cube":
                 # plot item of cube
                 self._plotCube(axGlob, float(x), float(y), float(z), float(w), float(h), float(
                     d), color=color, mode=2, text=text, fontsize=fontsize, alpha=alpha)
-            elif item.typeof == 'cylinder':
+            elif item.typeof == "cylinder":
                 # plot item of cylinder
                 self._plotCylinder(axGlob, float(x), float(y), float(z), float(w), float(
                     h), float(d), color=color, mode=2, text=text, fontsize=fontsize, alpha=alpha)
@@ -863,12 +858,12 @@ class Painter:
         return plt
 
     def setAxesEqual(self, ax):
-        '''Make axes of 3D plot have equal scale so that spheres appear as spheres,
-        cubes as cubes, etc..  This is one possible solution to Matplotlib's
-        ax.set_aspect('equal') and ax.axis('equal') not working for 3D.
+        """Make axes of 3D plot have equal scale so that spheres appear as spheres,
+        cubes as cubes, etc..  This is one possible solution to Matplotlib"s
+        ax.set_aspect("equal") and ax.axis("equal") not working for 3D.
 
         Input
-        ax: a matplotlib axis, e.g., as output from plt.gca().'''
+        ax: a matplotlib axis, e.g., as output from plt.gca()."""
         x_limits = ax.get_xlim3d()
         y_limits = ax.get_ylim3d()
         z_limits = ax.get_zlim3d()
