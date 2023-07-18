@@ -80,6 +80,8 @@ class Bin(BaseModel):
     max_weight: Decimal
     corner: int = 0
     items: list = []
+    fit_items: np.array = np.array(        # type: ignore
+        [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]])  # type: ignore
     unfitted_items: list = []
     number_of_decimals: int = DEFAULT_NUMBER_OF_DECIMALS
     fix_point: bool = False
@@ -88,9 +90,10 @@ class Bin(BaseModel):
     put_type: int = 1
     gravity: list = []  # used to put gravity distribution
 
-    @property
-    def fit_items(self):
-        return np.array([[0.0, float(self.width), 0.0, float(self.height), 0.0, 0.0]])
+    # TODO
+    # @property
+    # def fit_items(self):
+    #     return np.array([[0.0, float(self.width), 0.0, float(self.height), 0.0, 0.0]])
 
     def formatNumbers(self, number_of_decimals) -> None:
         self.width = set2Decimal(self.width, number_of_decimals)
@@ -146,179 +149,238 @@ class Bin(BaseModel):
                 item.position = valid_item_position
                 return False
 
+            # TODO position reset?
             # check if adding the item does not exceed the maximum allowed weight
             if self.getTotalWeight() + item.weight > self.max_weight:
                 return False
 
             # fix point float prob
             if self.fix_point:
-                [w, h, d] = item_dimension
-                [x, y, z] = [float(pivot[0]), float(
-                    pivot[1]), float(pivot[2])]
-
-                # TODO why three times?
-                for i in range(3):
-                    # fix height
-                    y = self.checkHeight(
-                        [x, x+float(w), y, y+float(h), z, z+float(d)])
-                    # fix width
-                    x = self.checkWidth(
-                        [x, x+float(w), y, y+float(h), z, z+float(d)])
-                    # fix depth
-                    z = self.checkDepth(
-                        [x, x+float(w), y, y+float(h), z, z+float(d)])
-
-                # check stability on item
-                # The support ration is the ratio of the underlying items touching the newly placed item to the lower surface of the newly placed item
-                # rule :
-                # 1. Define a support ratio, if the ratio below the support surface does not exceed this ratio, compare the second rule.
-                # 2. If there is no support under any vertices of the bottom of the item, then fit = False.
-                if self.check_stable:
-                    # Calculate the surface area of ​​item.
-                    item_area_lower = int(
-                        item_dimension[0] * item_dimension[1])
-                    # Calculate the surface area of ​​the underlying support.
-                    support_area_upper = 0
-                    for item in [item for item in self.fit_items if z == item[5]]:
-                        # Verify that the lower support surface area is greater than the upper support surface area * support_surface_ratio.
-                        # TODO better way to calculate the intersecting area
-                        area = len(set(range(int(x), int(x+int(w)))) & set(range(int(item[0]), int(item[1])))) * len(
-                            set(range(int(y), int(y+int(h)))) & set(range(int(item[2]), int(item[3]))))
-                        support_area_upper += area
-
-                    # If not , get four vertices of the bottom of the item.
-                    if support_area_upper / item_area_lower < self.support_surface_ratio:
-                        four_vertices = [
-                            [x, y], [x+float(w), y], [x, y+float(h)], [x+float(w), y+float(h)]]
-                        #  If any vertices is not supported, fit = False.
-                        c = [False, False, False, False]
-                        for item in [item for item in self.fit_items if z == item[5]]:
-                            for idx, vertex in enumerate(four_vertices):
-                                if (item[0] <= vertex[0] <= item[1]) and (item[2] <= vertex[1] <= item[3]):
-                                    c[idx] = True
-                        if False in c:
-                            item.position = valid_item_position
-                            return False
-
-                self.fit_items = np.append(self.fit_items, np.array(
-                    [[x, x+float(w), y, y+float(h), z, z+float(d)]]), axis=0)
-                item.position = [set2Decimal(
-                    x), set2Decimal(y), set2Decimal(z)]
+                fit = self.check_fixpoint(item, item_dimension, pivot)
 
             if fit:
                 self.items.append(copy.deepcopy(item))
+            else:
+                item.position = valid_item_position
+
             return fit
 
-        else:
-            item.position = valid_item_position
+    def check_fixpoint(self, item, item_dimension, pivot) -> bool:
+        [w, h, d] = item_dimension
+        [x, y, z] = [float(pivot[0]), float(pivot[1]), float(pivot[2])]
 
-        return fit
+        # TODO why three times?
+        for i in range(3):
+            # fix height
+            y = self.checkHeight(
+                [x, (x + float(w)), y, (y + float(h)), z, (z + float(d))])
+            # fix width
+            x = self.checkWidth(
+                [x, (x + float(w)), y, (y + float(h)), z, (z + float(d))])
+            # fix depth
+            z = self.checkDepth(
+                [x, (x + float(w)), y, (y + float(h)), z, (z + float(d))])
 
-    def checkDepth_old(self, unfix_point):
-        ''' fix item position z '''
-        z_ = [[0, 0], [float(self.depth), float(self.depth)]]
-        for j in self.fit_items:
-            # create x set
-            x_bottom = set(range(int(j[0]), int(j[1])))
-            x_top = set(range(int(unfix_point[0]), int(unfix_point[1])))
-            # create y set
-            y_bottom = set(range(int(j[2]), int(j[3])))
-            y_top = set(range(int(unfix_point[2]), int(unfix_point[3])))
-            # find intersection on x set and y set.
-            if len(x_bottom & x_top) != 0 and len(y_bottom & y_top) != 0:
-                z_.append([float(j[4]), float(j[5])])
-        top_depth = unfix_point[5] - unfix_point[4]
-        # find diff set on z_.
-        z_ = sorted(z_, key=lambda z_: z_[1])
-        for j in range(len(z_)-1):
-            if z_[j+1][0] - z_[j][1] >= top_depth:
-                return z_[j][1]
-        return unfix_point[4]
+        # check stability on item
+        # The support ratio is the ratio of the underlying items touching the newly placed item to the lower surface of the newly placed item
+        # rule:
+        # 1. Define a support ratio, if the ratio below the support surface does not exceed this ratio, compare the second rule.
+        # 2. If there is no support under any vertices of the bottom of the item, then fit = False.
+        if self.check_stable:
+            # Calculate the surface area of ​​item (W * D).
+            item_area_lower = int(item_dimension[0] * item_dimension[2])
+            # Calculate the surface area of ​​the underlying items, supporting the new one.
+            support_area_upper = 0
+            # check all items that have such a height, that is the same height as the pivot point
+            for i in [i for i in self.fit_items if y == i[3]]:
+                # calculate the intersecting area of boxes with the right dimension and the bottom surface of the new item
+                support_area_upper += self.calculate_rect_intersect(
+                    [x, x + w, z, z + d], [i[0], i[1], i[4], i[5]])
 
-    # TODO weiter nachvollziehen und andere anpassen
-    def checkDepth(self, unfix_point):
-        '''Fix item position in the z-axis'''
+            # Verify that the lower support surface area is greater than the upper support surface area * support_surface_ratio.
+            if support_area_upper / item_area_lower < self.support_surface_ratio:
+                # If not, get four vertices of the bottom of the item and check whether the vertices are supported
+                bottom_vertices = [
+                    [x, z], [x+float(w), z], [x, z+float(d)], [x+float(w), z+float(d)]]
+                # If any vertex is not supported, fit = False.
+                c = [False, False, False, False]
+                for i in [i for i in self.fit_items if y == i[3]]:
+                    for idx, vertex in enumerate(bottom_vertices):
+                        if (i[0] <= vertex[0] <= i[1]) and (i[2] <= vertex[1] <= i[3]):
+                            c[idx] = True
+                if False in c:
+                    return False
+
+        # add the item with the correct dimensions to the fitted items
+        self.fit_items = np.append(self.fit_items, np.array(
+            [[x, x+float(w), y, y+float(h), z, z+float(d)]]), axis=0)
+        item.position = [set2Decimal(x), set2Decimal(y), set2Decimal(z)]
+        return True
+
+    def calculate_rect_intersect(self, rect1: list[float], rect2: list[float]) -> float:
+        '''
+        Calculate the intersecting area of two rectangles.
+
+        Args:
+            rect1 (list): Coordinates of the first rectangle in the format [x1, y1, x2, y2].
+            rect2 (list): Coordinates of the second rectangle in the format [x1, y1, x2, y2].
+
+        Returns:
+            float: The intersecting area of the two rectangles. Returns 0 if there is no intersection.
+        '''
+
+        # Get the coordinates of the rectangles
+        x1, y1, x2, y2 = rect1
+        x3, y3, x4, y4 = rect2
+
+        # Calculate the coordinates of the intersection rectangle
+        x_left: float = max(x1, x3)
+        y_top: float = max(y1, y3)
+        x_right: float = min(x2, x4)
+        y_bottom: float = min(y2, y4)
+
+        # Check if there is no intersection
+        if x_right < x_left or y_bottom < y_top:
+            return 0
+
+        # Calculate the intersecting area
+        intersecting_area: float = (x_right - x_left) * (y_bottom - y_top)
+        return intersecting_area
+
+    def checkDepth(self, not_fixed_item: list[float]) -> float:
+        """Takes an item and tries to find the point minimizing the gap in the z-dimension (depth). The method checks if the item can be placed deeper than the current pivot point suggests.
+
+        Args:
+            not_fixed_item (list[float]): The item, if placed at the current pivot point.
+
+        Returns:
+            float: Fixed z dimension, to updated the pivot point
+        """
 
         # Initialize z-axis ranges with bottom and top limits
-        z_ranges = [[0, 0], [float(self.depth), float(self.depth)]]
+        z_dim_points = [[0, 0], [float(self.depth), float(self.depth)]]
 
         # Iterate over each item in fit_items
         for item in self.fit_items:
-            # Create ranges for x and y dimensions
-            x_bottom_range = range(int(item[0]), int(item[1]))
-            x_top_range = range(int(unfix_point[0]), int(unfix_point[1]))
-            y_bottom_range = range(int(item[2]), int(item[3]))
-            y_top_range = range(int(unfix_point[2]), int(unfix_point[3]))
+            # check if there is an intersection in the rectangle if not considering depth
+            item_rect = [item[0], item[1], item[2], item[3]]
+            not_fixed_rect = [not_fixed_item[0], not_fixed_item[1],
+                              not_fixed_item[2], not_fixed_item[3]]
+            area = self.calculate_rect_intersect(item_rect, not_fixed_rect)
 
-            # Check for intersection between x and y ranges
-            if set(x_bottom_range) & set(x_top_range) and set(y_bottom_range) & set(y_top_range):
-                # Append z-axis range of the item to the list
-                z_ranges.append([float(item[4]), float(item[5])])
+            # Append z-axis points of the item to the list if there is an intersection
+            if area > 0:
+                z_dim_points.append([float(item[4]), float(item[5])])
 
-        # Calculate the top depth of the unfix_point range
-        top_depth = unfix_point[5] - unfix_point[4]
+        # Calculate the max depth of the not_fixed_item range
+        max_depth = not_fixed_item[5] - not_fixed_item[4]
 
         # Sort z-axis ranges based on the upper limit
-        sorted_z_ranges = sorted(z_ranges, key=lambda z_range: z_range[1])
+        sorted_z_dim_points = sorted(
+            z_dim_points, key=lambda z_range: z_range[1])
 
         # Iterate over sorted z-axis ranges to find suitable space for fixing the item
-        for i in range(len(sorted_z_ranges) - 1):
-            current_range = sorted_z_ranges[i]
-            next_range = sorted_z_ranges[i + 1]
+        for i in range(len(sorted_z_dim_points) - 1):
+            current_range = sorted_z_dim_points[i]
+            next_range = sorted_z_dim_points[i + 1]
 
-            # Check if there is enough space between current and next range for fixing the item
-            if next_range[0] - current_range[1] >= top_depth:
+            # Check if the space is not too big to push the pivot point to the edge in the z-dimension
+            if next_range[0] - current_range[1] >= max_depth:
+                # TODO why not current_range[0]?
                 return current_range[1]
 
-        # If no suitable space is found, fix the item at the initial lower limit of unfix_point range
-        return unfix_point[4]
+        # If no suitable space is found, fix the item at the initial lower limit of not_fixed_item range
+        return not_fixed_item[4]
 
-    def checkWidth(self, unfix_point):
-        ''' fix item position x '''
-        x_ = [[0, 0], [float(self.width), float(self.width)]]
-        for j in self.fit_items:
-            # create z set
-            z_bottom = set([i for i in range(int(j[4]), int(j[5]))])
-            z_top = set(
-                [i for i in range(int(unfix_point[4]), int(unfix_point[5]))])
-            # create y set
-            y_bottom = set([i for i in range(int(j[2]), int(j[3]))])
-            y_top = set(
-                [i for i in range(int(unfix_point[2]), int(unfix_point[3]))])
-            # find intersection on z set and y set.
-            if len(z_bottom & z_top) != 0 and len(y_bottom & y_top) != 0:
-                x_.append([float(j[0]), float(j[1])])
-        top_width = unfix_point[1] - unfix_point[0]
-        # find diff set on x_bottom and x_top.
-        x_ = sorted(x_, key=lambda x_: x_[1])
-        for j in range(len(x_)-1):
-            if x_[j+1][0] - x_[j][1] >= top_width:
-                return x_[j][1]
-        return unfix_point[0]
+    def checkWidth(self, not_fixed_item: list[float]) -> float:
+        """Takes an item and tries to find the point minimizing the gap in the x-dimension (width). The method checks if the item can be placed deeper than the current pivot point suggests.
 
-    def checkHeight(self, unfix_point):
-        '''fix item position y '''
-        y_ = [[0, 0], [float(self.height), float(self.height)]]
-        for j in self.fit_items:
-            # create x set
-            x_bottom = set([i for i in range(int(j[0]), int(j[1]))])
-            x_top = set(
-                [i for i in range(int(unfix_point[0]), int(unfix_point[1]))])
-            # create z set
-            z_bottom = set([i for i in range(int(j[4]), int(j[5]))])
-            z_top = set(
-                [i for i in range(int(unfix_point[4]), int(unfix_point[5]))])
-            # find intersection on x set and z set.
-            if len(x_bottom & x_top) != 0 and len(z_bottom & z_top) != 0:
-                y_.append([float(j[2]), float(j[3])])
-        top_height = unfix_point[3] - unfix_point[2]
-        # find diff set on y_bottom and y_top.
-        y_ = sorted(y_, key=lambda y_: y_[1])
-        for j in range(len(y_)-1):
-            if y_[j+1][0] - y_[j][1] >= top_height:
-                return y_[j][1]
+        Args:
+            not_fixed_item (list[float]): The item, if placed at the current pivot point.
 
-        return unfix_point[2]
+        Returns:
+            float: Fixed x dimension, to updated the pivot point
+        """
+
+        # Initialize x-axis ranges with bottom and top limits
+        x_dim_points = [[0, 0], [float(self.width), float(self.width)]]
+
+        # Iterate over each item in fit_items
+        for item in self.fit_items:
+            # check if there is an intersection in the rectangle if not considering width
+            item_rect = [item[4], item[5], item[2], item[3]]
+            not_fixed_rect = [not_fixed_item[4], not_fixed_item[5],
+                              not_fixed_item[2], not_fixed_item[3]]
+            area = self.calculate_rect_intersect(item_rect, not_fixed_rect)
+
+            # Append x-axis points of the item to the list if there is an intersection
+            if area > 0:
+                x_dim_points.append([float(item[0]), float(item[1])])
+
+        # Calculate the max width of the not_fixed_item range
+        max_width = not_fixed_item[1] - not_fixed_item[0]
+
+        # Sort x-axis ranges based on the upper limit
+        sorted_x_dim_points = sorted(
+            x_dim_points, key=lambda x_range: x_range[1])
+
+        # Iterate over sorted x-axis ranges to find suitable space for fixing the item
+        for i in range(len(sorted_x_dim_points) - 1):
+            current_range = sorted_x_dim_points[i]
+            next_range = sorted_x_dim_points[i + 1]
+
+            # Check if the space is not too big to push the pivot point to the edge in the x-dimension
+            if next_range[0] - current_range[1] >= max_width:
+                # TODO why not current_range[0]?
+                return current_range[1]
+
+        # If no suitable space is found, fix the item at the initial lower limit of not_fixed_item range
+        return not_fixed_item[0]
+
+    def checkHeight(self, not_fixed_item: list[float]) -> float:
+        """Takes an item and tries to find the point minimizing the gap in the y-dimension (height). The method checks if the item can be placed deeper than the current pivot point suggests.
+
+        Args:
+            not_fixed_item (list[float]): The item, if placed at the current pivot point.
+
+        Returns:
+            float: Fixed z dimension, to updated the pivot point
+        """
+
+        # Initialize y-axis ranges with bottom and top limits
+        y_dim_points = [[0, 0], [float(self.height), float(self.height)]]
+
+        # Iterate over each item in fit_items
+        for item in self.fit_items:
+            # check if there is an intersection in the rectangle if not considering height
+            item_rect = [item[4], item[5], item[0], item[1]]
+            not_fixed_rect = [not_fixed_item[4], not_fixed_item[5],
+                              not_fixed_item[0], not_fixed_item[1]]
+            area = self.calculate_rect_intersect(item_rect, not_fixed_rect)
+
+            # Append y-axis points of the item to the list if there is an intersection
+            if area > 0:
+                y_dim_points.append([float(item[2]), float(item[3])])
+
+        # Calculate the max height of the not_fixed_item range
+        max_height = not_fixed_item[1] - not_fixed_item[0]
+
+        # Sort y-axis ranges based on the upper limit
+        sorted_y_dim_points = sorted(
+            y_dim_points, key=lambda y_range: y_range[1])
+
+        # Iterate over sorted y-axis ranges to find suitable space for fixing the item
+        for i in range(len(sorted_y_dim_points) - 1):
+            current_range = sorted_y_dim_points[i]
+            next_range = sorted_y_dim_points[i + 1]
+
+            # Check if the space is not too big to push the pivot point to the edge in the y-dimension
+            if next_range[0] - current_range[1] >= max_height:
+                # TODO why not current_range[0]?
+                return current_range[1]
+
+        # If no suitable space is found, fix the item at the initial lower limit of not_fixed_item range
+        return not_fixed_item[2]
 
     def addCorner(self):
         '''add container coner '''
