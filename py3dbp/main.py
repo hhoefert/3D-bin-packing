@@ -484,6 +484,21 @@ class Packer(BaseModel):
         # if the return has not been reached, the item does not fit in the bin and ist stored accordingly
         bin.unfitted_items.append(item)
 
+    def sort_binding(self) -> None:
+        """ sorted by binding """
+        bindings: list[list[Item]] = []
+        other: list[Item] = []
+        for i in range(len(self.binding)):
+            bindings.append([])
+            for item in self.items:
+                if item.name in self.binding[i]:
+                    bindings[i].append(item)
+                else:
+                    other.append(item)
+
+        bindings.sort(key=len)
+        self.items = [b for binding in bindings for b in binding] + other
+
     def putOrder(self):
         """Arrange the order of items """
         r = []
