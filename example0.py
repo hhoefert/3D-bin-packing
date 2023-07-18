@@ -18,7 +18,7 @@ box = Bin(
     WHD=(589.8, 243.8, 259.1),
     max_weight=28080,
     corner=15,
-    put_type=0
+    bin_type=0
 )
 
 packer.add_bin(box)

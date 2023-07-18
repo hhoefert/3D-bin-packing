@@ -34,7 +34,7 @@ packer.pack(
 )
 
 # put order
-packer.putOrder()
+packer.packing_order()
 
 # print result
 for b in packer.bins:

@@ -69,7 +69,7 @@ packer.pack(
 )
 
 # put order
-packer.putOrder()
+packer.packing_order()
 
 # print result
 print("***************************************************")

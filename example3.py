@@ -11,7 +11,7 @@ This example is used to demonstrate that the algorithm does not optimize.
 # init packing function
 packer = Packer()
 #  init bin
-box = Bin('example3', (6, 1, 5), 100, 0, put_type=0)
+box = Bin('example3', (6, 1, 5), 100, 0, bin_type=0)
 #  add item
 # Item('item partno', (W,H,D), Weight, Packing Priority level, load bear, Upside down or not , 'item color')
 packer.add_bin(box)

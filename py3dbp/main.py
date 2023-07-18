@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib.patches import Circle, Rectangle
 from pydantic import BaseModel
 
-from .auxiliary_methods import intersect, set2Decimal
+from .auxiliary_methods import set2Decimal
 from .constants import Axis, RotationType
 
 DEFAULT_NUMBER_OF_DECIMALS = 0
@@ -72,6 +72,54 @@ class Item(BaseModel):
         return rotation_types.get(self.rotation_type, [])
 
 
+def rectIntersect(item1: Item, item2: Item, x: int, y: int) -> bool:
+    """
+    Check if two rectangles represented by `item1` and `item2` intersect.
+
+    Args:
+        item1 (Item): The first rectangle item.
+        item2 (Item): The second rectangle item.
+        x (int): The index representing the x-axis dimension in the `position` attribute of the items.
+        y (int): The index representing the y-axis dimension in the `position` attribute of the items.
+
+    Returns:
+        bool: True if the rectangles intersect, False otherwise.
+    """
+    # get item dimensions
+    dim1 = item1.get_dimension()
+    dim2 = item2.get_dimension()
+
+    # get the center of the x and the y edge of the rectangle
+    center_x1 = item1.position[x] + dim1[x]/2
+    center_y1 = item1.position[y] + dim1[y]/2
+    center_x2 = item2.position[x] + dim2[x]/2
+    center_y2 = item2.position[y] + dim2[y]/2
+
+    # calculate the distance
+    intersect_x = abs(center_x1 - center_x2)
+    intersect_y = abs(center_y1 - center_y2)
+
+    # check if the distance is greater than the x or y dimensions of the items added and divided by 2
+    return intersect_x < (dim1[x]+dim2[x]) / 2 and intersect_y < (dim1[y]+dim2[y]) / 2
+
+
+def intersect(item1: Item, item2: Item) -> bool:
+    """Check if two cuboids intersect.
+
+    Args:
+        item1 (Item): Cuboid 1.
+        item2 (Item): Cuboid 2.
+
+    Returns:
+        bool: True if the cuboids intersect, False otherwise.
+    """
+    return (
+        rectIntersect(item1, item2, Axis.WIDTH, Axis.HEIGHT) and  # noqa
+        rectIntersect(item1, item2, Axis.HEIGHT, Axis.DEPTH) and  # noqa
+        rectIntersect(item1, item2, Axis.WIDTH, Axis.DEPTH)
+    )
+
+
 class Bin(BaseModel):
     partno: str
     width: Decimal
@@ -87,7 +135,7 @@ class Bin(BaseModel):
     fix_point: bool = False
     check_stable: bool = False
     support_surface_ratio: float = 0
-    put_type: int = 1
+    bin_type: int = 1  # 1 for a general container, 2 for an top open container
     gravity: list = []  # used to put gravity distribution
 
     # TODO
@@ -499,28 +547,27 @@ class Packer(BaseModel):
         bindings.sort(key=len)
         self.items = [b for binding in bindings for b in binding] + other
 
-    def putOrder(self):
-        """Arrange the order of items """
-        r = []
-        for i in self.bins:
-            # open top container
-            if i.put_type == 2:
-                i.items.sort(key=lambda item: item.position[0], reverse=False)
-                i.items.sort(key=lambda item: item.position[1], reverse=False)
-                i.items.sort(key=lambda item: item.position[2], reverse=False)
+    def packing_order(self) -> None:
+        """Sorts the items of each bin based on the bin type.
+
+        Raises:
+            RuntimeError: If the bin type provided is not specified.
+        """
+        for bin in self.bins:
             # general container
-            elif i.put_type == 1:
-                i.items.sort(key=lambda item: item.position[1], reverse=False)
-                i.items.sort(key=lambda item: item.position[2], reverse=False)
-                i.items.sort(key=lambda item: item.position[0], reverse=False)
+            if bin.bin_type == 1:
+                bin.items.sort(key=lambda item: (
+                    item.position[1], item.position[2], item.position[0]))
+            # open top container
+            elif bin.bin_type == 2:
+                bin.items.sort(key=lambda item: (
+                    item.position[0], item.position[1], item.position[2]))
             else:
-                pass
-        return
+                raise RuntimeError(
+                    f"Item order cannot be determined for unspecified container type (Type {bin.bin_type})")
 
     def gravityCenter_old(self, bin):
-        """ 
-        Deviation Of Cargo gravity distribution
-        """
+        """Deviation Of Cargo gravity distribution"""
         w = int(bin.width)
         h = int(bin.height)
         d = int(bin.depth)
@@ -599,10 +646,9 @@ class Packer(BaseModel):
             result.append(round(i / sum(r) * 100, 2))
         return result
 
-    def gravityCenter(self, bin):
-        """ 
-        Deviation Of Cargo gravity distribution
-        """
+    # TODO refactor
+    def gravityCenter(self, bin: Bin):
+        """Deviation Of Cargo gravity distribution"""
         w = int(bin.width)
         h = int(bin.height)
         d = int(bin.depth)
@@ -677,69 +723,52 @@ class Packer(BaseModel):
         result = [round(i / sum(r) * 100, 2) for i in r]
         return result
 
-    def pack(self, bigger_first=False, distribute_items=True, fix_point=True, check_stable=True, support_surface_ratio=0.75, binding=[], number_of_decimals=DEFAULT_NUMBER_OF_DECIMALS):
-        """pack master func """
+    def pack(self, bigger_first: bool = False, distribute_items: bool = True, fix_point: bool = True, check_stable: bool = True, support_surface_ratio: float = 0.75, binding: list[tuple] = [], number_of_decimals: int = DEFAULT_NUMBER_OF_DECIMALS):
+        """pack master func TODO docstring"""
+
         # set decimals
         for bin in self.bins:
             bin.format_numbers(number_of_decimals)
-
         for item in self.items:
             item.format_numbers(number_of_decimals)
-        # add binding attribute
+
         self.binding = binding
-        # Bin : sorted by volumn
+        # Bin : sorted by volume
         self.bins.sort(key=lambda bin: bin.get_volume(), reverse=bigger_first)
-        # Item : sorted by volumn -> sorted by loadbear -> sorted by level -> binding
+
+        # Item (TODO) : sorted by volume -> sorted by loadbear -> sorted by level -> binding
         self.items.sort(key=lambda item: item.get_volume(),
                         reverse=bigger_first)
-        # self.items.sort(key=lambda item: item.getMaxArea(), reverse=bigger_first)
         self.items.sort(key=lambda item: item.loadbear, reverse=True)
         self.items.sort(key=lambda item: item.level, reverse=False)
+
+        # packing order of items
+        self.packing_order()
+
         # sorted by binding
         if binding != []:
-            self.sort_binding(bin)
+            self.sort_binding()
 
-        for idx, bin in enumerate(self.bins):
-            # pack item to bin
+        for bin in self.bins:
+            # TODO enforce binding, do not just sort
+            # pack items to bin
             for item in self.items:
-                self.pack_item_to_bin(bin, item, fix_point, check_stable,
-                                      support_surface_ratio)
+                self.pack_item_to_bin(bin=bin,
+                                      item=item,
+                                      fix_point=fix_point,
+                                      check_stable=check_stable,
+                                      support_surface_ratio=support_surface_ratio)
 
-            if binding != []:
-                # resorted
-                self.items.sort(
-                    key=lambda item: item.get_volume(), reverse=bigger_first)
-                self.items.sort(key=lambda item: item.loadbear, reverse=True)
-                self.items.sort(key=lambda item: item.level, reverse=False)
-                # clear bin
-                bin.items = []
-                bin.unfitted_items = self.unfit_items
-                bin.fit_items = np.array([[0, bin.width, 0, bin.height, 0, 0]])
-                # repacking
-                for item in self.items:
-                    self.pack_item_to_bin(bin, item, fix_point,
-                                          check_stable, support_surface_ratio)
-
-            # Deviation Of Cargo Gravity Center
-            self.bins[idx].gravity = self.gravityCenter(bin)
+            # Deviation Of Cargo Gravity Center TODO
+            bin.gravity = self.gravityCenter(bin)
 
             if distribute_items:
-                for bitem in bin.items:
-                    no = bitem.partno
-                    for item in self.items:
-                        if item.partno == no:
-                            self.items.remove(item)
-                            break
-
-        # put order of items
-        self.putOrder()
+                for item in bin.items:
+                    self.items.remove(item)
 
         if self.items != []:
             self.unfit_items = copy.deepcopy(self.items)
             self.items = []
-        # for item in self.items.copy():
-        #     if item in bin.unfitted_items:
-        #         self.items.remove(item)
 
 
 class Painter:

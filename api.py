@@ -162,7 +162,7 @@ def getBoxAndItem(data):
         WHD=box_data['WHD'],
         max_weight=box_data['weight'],
         corner=box_data['coner'],
-        put_type=box_data['openTop'][0]
+        bin_type=box_data['openTop'][0]
     )
     packer.add_bin(box)
     # get item data  TODO
